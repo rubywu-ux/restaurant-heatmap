@@ -990,17 +990,31 @@ def get_top5_js(restaurant_data):
                     }}).addTo(currentMarkerLayer);
                 }}
             }} else {{
-                // Restaurant markers with popups
+                // Find max visit count for scaling
+                var maxCount = 1;
+                for (var i = 0; i < allRestaurants.length; i++) {{
+                    if (allRestaurants[i].count > maxCount) maxCount = allRestaurants[i].count;
+                }}
+
+                // Restaurant markers scaled by visit density
                 for (var i = 0; i < allRestaurants.length; i++) {{
                     var r = allRestaurants[i];
+                    var ratio = r.count / maxCount;
+
+                    // Scale radius: 3px (1 visit) → 12px (max visits)
+                    var scaledRadius = 3 + ratio * 9;
+
+                    // Scale opacity: 0.35 (1 visit) → 0.85 (max visits)
+                    var scaledOpacity = 0.35 + ratio * 0.5;
+
                     var popup = '<b>' + r.name + '</b><br>' + r.city + '<br>Visits: ' + r.count + '<br>Spent: $' + r.total.toFixed(2);
                     L.circleMarker([r.lat, r.lon], {{
-                        radius: cfg.dotRadius,
+                        radius: scaledRadius,
                         color: cfg.dotStroke,
                         weight: 0.5,
                         fill: true,
                         fillColor: cfg.dotColor,
-                        fillOpacity: cfg.dotOpacity
+                        fillOpacity: scaledOpacity
                     }}).bindPopup(popup).bindTooltip(r.name).addTo(currentMarkerLayer);
                 }}
             }}
