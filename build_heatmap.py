@@ -1161,9 +1161,9 @@ def get_top5_js(restaurant_data):
             if (mapObj) {{
                 clearInterval(checkMap);
 
-                // Disable Leaflet's sluggish built-in scroll zoom
+                // Disable Leaflet's built-in scroll zoom entirely
                 mapObj.scrollWheelZoom.disable();
-                mapObj.options.zoomSnap = 1;  // snap to whole levels (prevents tile flash)
+                mapObj.options.zoomSnap = 1;
 
                 // Fast inertia panning
                 mapObj.options.inertia = true;
@@ -1172,38 +1172,73 @@ def get_top5_js(restaurant_data):
                 mapObj.options.easeLinearity = 0.2;
                 mapObj.options.zoomAnimationThreshold = 8;
 
-                // Custom fast wheel zoom: accumulates scroll, commits at whole zoom levels
+                // Smooth continuous zoom via CSS transform scaling
+                // Visually scales instantly; tiles reload only when scrolling stops
                 (function() {{
                     var container = mapObj.getContainer();
-                    var accumDelta = 0;
-                    var scrollTimer = null;
+                    var mapPane = container.querySelector('.leaflet-map-pane');
+                    var baseZoom = mapObj.getZoom();
+                    var visualZoom = baseZoom;
+                    var commitTimer = null;
+                    var lastMouseEvent = null;
+
+                    // Make transform-origin follow cursor for zoom-toward-pointer
+                    mapPane.style.transformOrigin = '50% 50%';
+                    mapPane.style.transition = 'none';
+
+                    function commitZoom() {{
+                        var roundedZoom = Math.round(visualZoom);
+                        roundedZoom = Math.min(Math.max(roundedZoom, mapObj.getMinZoom()), mapObj.getMaxZoom());
+
+                        // Reset visual scale before committing
+                        mapPane.style.transform = '';
+
+                        if (roundedZoom !== baseZoom && lastMouseEvent) {{
+                            var rect = container.getBoundingClientRect();
+                            var mouseLatLng = mapObj.containerPointToLatLng([
+                                lastMouseEvent.clientX - rect.left,
+                                lastMouseEvent.clientY - rect.top
+                            ]);
+                            mapObj.setZoomAround(mouseLatLng, roundedZoom, {{animate: false}});
+                        }}
+                        baseZoom = mapObj.getZoom();
+                        visualZoom = baseZoom;
+                    }}
 
                     container.addEventListener('wheel', function(e) {{
                         e.preventDefault();
                         e.stopPropagation();
+                        lastMouseEvent = e;
 
-                        // Normalize scroll delta
+                        // Normalize delta
                         var delta = -e.deltaY;
                         if (e.deltaMode === 1) delta *= 40;
-                        accumDelta += delta;
 
-                        // Threshold: commit zoom when enough scroll accumulated (~150px per level)
-                        var levels = Math.trunc(accumDelta / 150);
-                        if (levels !== 0) {{
-                            accumDelta -= levels * 150;
-                            var curZoom = mapObj.getZoom();
-                            var newZoom = Math.min(Math.max(curZoom + levels, mapObj.getMinZoom()), mapObj.getMaxZoom());
-                            if (newZoom !== curZoom) {{
-                                var rect = container.getBoundingClientRect();
-                                var mouseLatLng = mapObj.containerPointToLatLng([e.clientX - rect.left, e.clientY - rect.top]);
-                                mapObj.setZoomAround(mouseLatLng, newZoom, {{animate: true, duration: 0.15}});
-                            }}
-                        }}
+                        // Accumulate visual zoom (smooth fractional changes)
+                        var zoomChange = delta / 300;
+                        visualZoom = Math.min(Math.max(visualZoom + zoomChange, mapObj.getMinZoom()), mapObj.getMaxZoom());
 
-                        // Reset accumulator if user stops scrolling
-                        clearTimeout(scrollTimer);
-                        scrollTimer = setTimeout(function() {{ accumDelta = 0; }}, 300);
+                        // Apply CSS scale for instant visual feedback
+                        var scaleFactor = Math.pow(2, visualZoom - baseZoom);
+
+                        // Set transform origin to mouse position
+                        var rect = container.getBoundingClientRect();
+                        var ox = ((e.clientX - rect.left) / rect.width) * 100;
+                        var oy = ((e.clientY - rect.top) / rect.height) * 100;
+                        mapPane.style.transformOrigin = ox + '% ' + oy + '%';
+                        mapPane.style.transform = 'scale(' + scaleFactor + ')';
+
+                        // Debounce: commit actual zoom when scrolling stops
+                        clearTimeout(commitTimer);
+                        commitTimer = setTimeout(commitZoom, 180);
                     }}, {{passive: false}});
+
+                    // Sync baseZoom on programmatic zoom changes (view switcher, click-nav)
+                    mapObj.on('zoomend', function() {{
+                        baseZoom = mapObj.getZoom();
+                        visualZoom = baseZoom;
+                        mapPane.style.transform = '';
+                    }});
                 }})();
 
                 // Remove Folium's default tile layer, heatmap, and markers
