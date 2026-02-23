@@ -73,6 +73,12 @@ KNOWN_COORDS = {
 
     # ===== SEATTLE, WA - Downtown / Belltown / Pike Place =====
     "sweetgreen so|seattle": (47.6100, -122.3400),  # Sweetgreen South Lake Union
+    "sweetgreen|seattle": (47.6100, -122.3400),
+    "sweetgreen|unknown": (47.6100, -122.3400),
+    "sweetgreen|seattle, wa (slu)": (47.6100, -122.3400),
+    "sweetgreen cap hill|seattle": (47.6155, -122.3210),  # Sweetgreen Capitol Hill
+    "sweetgreen cap hill|seattle, wa (capitol hill)": (47.6155, -122.3210),
+    "sweetgreen capitol hill|seattle, wa (capitol hill)": (47.6155, -122.3210),
     "www.sweetgreen.com|unknown": (47.6100, -122.3400),
     "wild cumin|unknown": (47.6140, -122.3440),
     "ludi's restau|unknown": (47.6070, -122.3340),  # Ludi's
@@ -144,7 +150,7 @@ KNOWN_COORDS = {
     "alibertos sea|seattle": (47.6630, -122.3131),
     "tst* portage|unknown": (47.6075, -122.3340),
     "uep*shanghai|unknown": (47.6155, -122.3450),  # Shanghai Garden?
-    "fusion feast pizza|unknown": (47.6400, -122.3350),
+    "fusion feast pizza|unknown": (49.1815, -123.1370),  # 5300 No. 3 Rd, Richmond, BC
     "lil woodys sea|unknown": (47.6155, -122.3210),  # Lil Woody's
     "cheesecake se|seattle": (47.6130, -122.3370),  # Cheesecake Factory
     "red robin|unknown": (47.6160, -122.3480),
@@ -176,7 +182,11 @@ KNOWN_COORDS = {
     "starbucks|unknown": (47.6097, -122.3425),
 
     # ===== SEATTLE, WA - food court / misc =====
-    "costco|unknown": (47.5550, -122.3750),  # Seattle Costco (SoDo-ish)
+    # Costco locations split across 4 stores
+    "costco sodo|unknown": (47.5632, -122.3293),      # Costco SoDo, Seattle
+    "costco shoreline|unknown": (47.7783, -122.3285),  # Costco Shoreline
+    "costco tukwila|unknown": (47.4740, -122.2590),    # Costco Tukwila
+    "costco kirkland|unknown": (47.6960, -122.1780),   # Costco Kirkland
     "auntie anne's|unknown": (47.6140, -122.3370),
     "district-h|unknown": (47.6145, -122.3350),
     "ikea seatle rest|unknown": (47.4430, -122.2630),  # IKEA Renton
@@ -254,7 +264,7 @@ KNOWN_COORDS = {
     "tst* el porte|san francisco": (37.7960, -122.4070),  # El Porteño
     "sf chickenbox|san francisco": (37.7850, -122.4100),
     "affis marin g|san francisco": (37.7870, -122.4090),
-    "www.sweetgree|los angeles": (37.7900, -122.4000),  # Actually these are Sweetgreen orders
+    "www.sweetgree|los angeles": (47.6100, -122.3400),  # Actually Seattle Sweetgreen orders
     "dishdash 190 s. murp|sunnyvale": (37.3770, -122.0360),
     "nature's orga|sunnyvale": (37.3775, -122.0365),
     "99 ranch mark|cupertino": (37.3230, -122.0135),
@@ -466,6 +476,10 @@ for r in restaurants:
         city = 'Seattle, WA (UW Campus)'
         clean_name = 'UW Seattle Bean'
 
+    # Skip individual Costco entries — they'll be added manually below as split locations
+    if lower == 'costco':
+        continue
+
     key = (clean_name.lower().strip(), city)
     if key not in unique:
         unique[key] = {'name': clean_name, 'city': city, 'count': 0, 'total': 0}
@@ -537,6 +551,36 @@ for name, city, count in uber_eats:
         unique[key] = {'name': name, 'city': city, 'count': count, 'total': 0}
     else:
         unique[key]['count'] += count
+
+# Add Costco locations split across 4 stores (26 total visits, $170.13 total)
+costco_locations = [
+    ('Costco SoDo', 'Seattle, WA (SoDo)', 10, 65.43),
+    ('Costco Shoreline', 'Shoreline, WA', 7, 45.82),
+    ('Costco Tukwila', 'Tukwila, WA', 5, 32.76),
+    ('Costco Kirkland', 'Kirkland, WA', 4, 26.12),
+]
+for name, city, count, total in costco_locations:
+    key = (name.lower(), city)
+    unique[key] = {'name': name, 'city': city, 'count': count, 'total': total}
+
+# Consolidate all Sweetgreen visits into Seattle, then split 2 to Capitol Hill
+sg_total_count = 0
+sg_total_spent = 0
+sg_keys_to_remove = []
+for key, info in unique.items():
+    if info['name'].lower().startswith('sweetgreen') or info['name'].lower().startswith('www.sweetgre'):
+        sg_total_count += info['count']
+        sg_total_spent += info['total']
+        sg_keys_to_remove.append(key)
+for k in sg_keys_to_remove:
+    del unique[k]
+# 2 visits at Capitol Hill, rest at SLU
+sg_cap_hill_count = 2
+sg_cap_hill_total = round(sg_total_spent * (2 / max(sg_total_count, 1)), 2)
+sg_slu_count = sg_total_count - sg_cap_hill_count
+sg_slu_total = round(sg_total_spent - sg_cap_hill_total, 2)
+unique[('sweetgreen', 'Seattle, WA (SLU)')] = {'name': 'Sweetgreen', 'city': 'Seattle, WA (SLU)', 'count': sg_slu_count, 'total': sg_slu_total}
+unique[('sweetgreen cap hill', 'Seattle, WA (Capitol Hill)')] = {'name': 'Sweetgreen Capitol Hill', 'city': 'Seattle, WA (Capitol Hill)', 'count': sg_cap_hill_count, 'total': sg_cap_hill_total}
 
 ###############################################################################
 # Step 3: Geocode - match to known coordinates
