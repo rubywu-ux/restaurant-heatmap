@@ -816,6 +816,45 @@ def get_top5_js(restaurant_data):
         body.dark-view .view-btn {{ color: #aaa; border-right-color: rgba(255,255,255,0.08); }}
         body.dark-view .view-btn:hover {{ background: rgba(255,255,255,0.08); }}
         body.dark-view .view-btn.active {{ background: #e74c3c; color: #fff; }}
+
+        /* Menu (fine dining) mode */
+        body.menu-view #top5-panel {{
+            background: rgba(250,246,239,0.95);
+            border: 1px solid #d4c5a9;
+            box-shadow: 0 2px 12px rgba(107,82,51,0.15);
+        }}
+        body.menu-view #top5-panel h3 {{
+            color: #5a4632;
+            font-style: italic;
+            letter-spacing: 0.5px;
+        }}
+        body.menu-view .top5-rank {{ color: #8b6f47; }}
+        body.menu-view .top5-name {{ color: #4a3728; }}
+        body.menu-view .top5-count {{ color: #5a4632; }}
+        body.menu-view .top5-stats {{ color: #8b7355; }}
+        body.menu-view .top5-item:hover {{ background: rgba(168,185,140,0.15); }}
+        body.menu-view .top5-item {{ border-bottom-color: #e8dfd0; }}
+        body.menu-view #search-input {{
+            background-color: rgba(250,246,239,0.95);
+            color: #4a3728;
+            border: 1px solid #d4c5a9;
+            box-shadow: 0 2px 12px rgba(107,82,51,0.15);
+        }}
+        body.menu-view #search-results {{
+            background: rgba(250,246,239,0.97);
+            border: 1px solid #d4c5a9;
+        }}
+        body.menu-view .search-result-item {{ border-bottom-color: #e8dfd0; }}
+        body.menu-view .search-result-item:hover {{ background: rgba(168,185,140,0.12); }}
+        body.menu-view .search-result-name {{ color: #4a3728; }}
+        body.menu-view .search-result-info {{ color: #8b7355; }}
+        body.menu-view #view-switcher {{
+            background: rgba(250,246,239,0.95);
+            border: 1px solid #d4c5a9;
+        }}
+        body.menu-view .view-btn {{ color: #6b5233; border-right-color: #d4c5a9; }}
+        body.menu-view .view-btn:hover {{ background: rgba(168,185,140,0.15); }}
+        body.menu-view .view-btn.active {{ background: #6b5233; color: #faf6ef; }}
     </style>
     <div id="search-panel">
         <input type="text" id="search-input" placeholder="Search restaurants..." autocomplete="off" />
@@ -824,9 +863,7 @@ def get_top5_js(restaurant_data):
     <div id="view-switcher">
         <button class="view-btn active" data-view="classic">Classic</button>
         <button class="view-btn" data-view="dark">Dark Neon</button>
-        <button class="view-btn" data-view="dots">Dot Density</button>
-        <button class="view-btn" data-view="blue">Minimal Blue</button>
-        <button class="view-btn" data-view="green">Terrain Green</button>
+        <button class="view-btn" data-view="menu">🍽️ Menu</button>
     </div>
     <div id="top5-panel">
         <h3>🍽 Top 5 in View</h3>
@@ -854,29 +891,14 @@ def get_top5_js(restaurant_data):
                 dotColor: '#0ff', dotStroke: '#0aa', dotOpacity: 0.7, dotRadius: 3,
                 dark: true, showHeat: true, showDots: false
             }},
-            dots: {{
-                tiles: 'https://{{s}}.basemaps.cartocdn.com/dark_all/{{z}}/{{x}}/{{y}}{{r}}.png',
+            menu: {{
+                tiles: 'https://{{s}}.basemaps.cartocdn.com/light_nolabels/{{z}}/{{x}}/{{y}}{{r}}.png',
                 attribution: '&copy; OpenStreetMap &copy; CARTO',
-                heatGradient: null,
-                heatRadius: 0, heatBlur: 0,
-                dotColor: '#ff6b35', dotStroke: '#ff6b35', dotOpacity: 0.4, dotRadius: 2,
-                dark: true, showHeat: false, showDots: true
-            }},
-            blue: {{
-                tiles: 'https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png',
-                attribution: '&copy; OpenStreetMap &copy; CARTO',
-                heatGradient: {{0.3: '#e8f4fd', 0.5: '#64b5f6', 0.75: '#1a73e8', 1.0: '#0d47a1'}},
-                heatRadius: 16, heatBlur: 12,
-                dotColor: '#1a73e8', dotStroke: '#0d47a1', dotOpacity: 0.5, dotRadius: 3,
-                dark: false, showHeat: true, showDots: false
-            }},
-            green: {{
-                tiles: 'https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png',
-                attribution: '&copy; OpenStreetMap &copy; CARTO',
-                heatGradient: {{0.2: '#c8e6c9', 0.5: '#66bb6a', 0.8: '#2e7d32', 1.0: '#1b5e20'}},
-                heatRadius: 16, heatBlur: 12,
-                dotColor: '#4caf50', dotStroke: '#2e7d32', dotOpacity: 0.5, dotRadius: 3,
-                dark: false, showHeat: true, showDots: false
+                heatGradient: {{0.2: '#f5f0e8', 0.4: '#d4c5a9', 0.6: '#a8b98c', 0.8: '#7a9e5a', 1.0: '#4a6741'}},
+                heatRadius: 18, heatBlur: 14,
+                dotColor: '#8b6f47', dotStroke: '#6b5233', dotOpacity: 0.7, dotRadius: 3,
+                dark: false, showHeat: true, showDots: false,
+                bodyBg: '#faf6ef'
             }}
         }};
 
@@ -903,10 +925,11 @@ def get_top5_js(restaurant_data):
             }});
 
             // Dark mode body class
+            document.body.classList.remove('dark-view', 'menu-view');
             if (cfg.dark) {{
                 document.body.classList.add('dark-view');
-            }} else {{
-                document.body.classList.remove('dark-view');
+            }} else if (viewName === 'menu') {{
+                document.body.classList.add('menu-view');
             }}
 
             // Swap tiles
