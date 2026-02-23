@@ -5,7 +5,7 @@ Reads transactions.csv + Uber Eats data, geocodes restaurants, builds Folium hea
 import csv
 import re
 import folium
-from folium.plugins import HeatMap, MarkerCluster
+from folium.plugins import HeatMap
 
 ###############################################################################
 # KNOWN RESTAURANT COORDINATES
@@ -840,7 +840,7 @@ def get_top5_js(restaurant_data):
             // Add/move highlight marker
             if (searchMarker) mapObj.removeLayer(searchMarker);
             searchMarker = L.circleMarker([lat, lon], {{
-                radius: 18, color: '#e74c3c', weight: 3, fillColor: '#e74c3c', fillOpacity: 0.2
+                radius: 14, color: 'transparent', weight: 0, fillColor: '#e74c3c', fillOpacity: 0.35
             }}).addTo(mapObj);
             searchMarker.bindPopup('<b>' + name + '</b>').openPopup();
 
@@ -868,8 +868,8 @@ def get_top5_js(restaurant_data):
 
             if (hoverMarker) mapObj.removeLayer(hoverMarker);
             hoverMarker = L.circleMarker([lat, lon], {{
-                radius: 22, color: '#e74c3c', weight: 3, fillColor: '#e74c3c',
-                fillOpacity: 0.18, className: 'top5-pulse'
+                radius: 16, color: 'transparent', weight: 0, fillColor: '#e74c3c',
+                fillOpacity: 0.3, className: 'top5-pulse'
             }}).addTo(mapObj);
         }});
 
@@ -909,7 +909,7 @@ def get_top5_js(restaurant_data):
             if (hoverMarker) mapObj.removeLayer(hoverMarker);
             if (searchMarker) mapObj.removeLayer(searchMarker);
             searchMarker = L.circleMarker([lat, lon], {{
-                radius: 18, color: '#e74c3c', weight: 3, fillColor: '#e74c3c', fillOpacity: 0.2
+                radius: 14, color: 'transparent', weight: 0, fillColor: '#e74c3c', fillOpacity: 0.35
             }}).addTo(mapObj);
             searchMarker.bindPopup('<b>' + name + '</b> · ' + item.dataset.count + 'x · $' + item.dataset.total).openPopup();
         }});
@@ -959,16 +959,20 @@ for r in geocoded:
 
 HeatMap(heat_data, radius=15, blur=10, max_zoom=13, name='Heatmap').add_to(m)
 
-# Marker cluster layer
-marker_cluster = MarkerCluster(name='Restaurants').add_to(m)
+# Individual circle markers (no clustering — all visible at every zoom)
 for r in geocoded:
     popup_text = f"<b>{r['name']}</b><br>{r['city']}<br>Visits: {r['count']}<br>Spent: ${r['total']:.2f}"
-    folium.Marker(
+    folium.CircleMarker(
         location=[r['lat'], r['lon']],
+        radius=max(4, min(r['count'], 14)),
+        color='#c0392b',
+        weight=1,
+        fill=True,
+        fill_color='#e74c3c',
+        fill_opacity=0.7,
         popup=folium.Popup(popup_text, max_width=250),
         tooltip=r['name'],
-        icon=folium.Icon(color='red', icon='cutlery', prefix='fa')
-    ).add_to(marker_cluster)
+    ).add_to(m)
 
 folium.LayerControl().add_to(m)
 
@@ -990,15 +994,19 @@ for r in seattle_data:
 
 HeatMap(heat_seattle, radius=18, blur=12, max_zoom=16, name='Heatmap').add_to(m2)
 
-marker_cluster2 = MarkerCluster(name='Restaurants').add_to(m2)
 for r in seattle_data:
     popup_text = f"<b>{r['name']}</b><br>{r['city']}<br>Visits: {r['count']}<br>Spent: ${r['total']:.2f}"
-    folium.Marker(
+    folium.CircleMarker(
         location=[r['lat'], r['lon']],
+        radius=max(5, min(r['count'], 16)),
+        color='#c0392b',
+        weight=1,
+        fill=True,
+        fill_color='#e74c3c',
+        fill_opacity=0.7,
         popup=folium.Popup(popup_text, max_width=250),
         tooltip=r['name'],
-        icon=folium.Icon(color='red', icon='cutlery', prefix='fa')
-    ).add_to(marker_cluster2)
+    ).add_to(m2)
 
 folium.LayerControl().add_to(m2)
 
