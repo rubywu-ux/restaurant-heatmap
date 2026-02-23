@@ -83,8 +83,8 @@ KNOWN_COORDS = {
     "siren store 2|seattle": (47.6095, -122.3425),
 
     # ===== SEATTLE, WA - Wallingford / Fremont / Ballard =====
-    "hokkaido rame|seattle": (47.6583, -122.3440),  # Hokkaido Ramen
-    "impeckable ch|seattle": (47.6580, -122.3460),
+    "hokkaido rame|seattle": (47.6615, -122.29750),  # Hokkaido Ramen
+    "impeckable ch|seattle": (47.6101, -122.3375),
     "oh bear cafe|seattle": (47.6520, -122.3500),
 
     # ===== SEATTLE, WA - Roosevelt / Northgate =====
