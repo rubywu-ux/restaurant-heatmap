@@ -1161,85 +1161,19 @@ def get_top5_js(restaurant_data):
             if (mapObj) {{
                 clearInterval(checkMap);
 
-                // Disable Leaflet's built-in scroll zoom entirely
-                mapObj.scrollWheelZoom.disable();
+                // Use Leaflet's native scroll zoom with tuned speed
+                // Native handles zoom-toward-cursor correctly without shifting
                 mapObj.options.zoomSnap = 1;
+                mapObj.options.wheelPxPerZoomLevel = 45;
+                mapObj.options.wheelDebounceTime = 30;
+                mapObj.options.zoomAnimation = true;
+                mapObj.options.zoomAnimationThreshold = 4;
 
-                // Fast inertia panning
+                // Smooth panning
                 mapObj.options.inertia = true;
                 mapObj.options.inertiaDeceleration = 3400;
                 mapObj.options.inertiaMaxSpeed = 3000;
                 mapObj.options.easeLinearity = 0.2;
-                mapObj.options.zoomAnimationThreshold = 8;
-
-                // Smooth continuous zoom via CSS transform scaling
-                // Visually scales instantly; tiles reload only when scrolling stops
-                (function() {{
-                    var container = mapObj.getContainer();
-                    var mapPane = container.querySelector('.leaflet-map-pane');
-                    var baseZoom = mapObj.getZoom();
-                    var visualZoom = baseZoom;
-                    var commitTimer = null;
-                    var lastMouseEvent = null;
-
-                    // Make transform-origin follow cursor for zoom-toward-pointer
-                    mapPane.style.transformOrigin = '50% 50%';
-                    mapPane.style.transition = 'none';
-
-                    function commitZoom() {{
-                        var roundedZoom = Math.round(visualZoom);
-                        roundedZoom = Math.min(Math.max(roundedZoom, mapObj.getMinZoom()), mapObj.getMaxZoom());
-
-                        // Reset visual scale before committing
-                        mapPane.style.transform = '';
-
-                        if (roundedZoom !== baseZoom && lastMouseEvent) {{
-                            var rect = container.getBoundingClientRect();
-                            var mouseLatLng = mapObj.containerPointToLatLng([
-                                lastMouseEvent.clientX - rect.left,
-                                lastMouseEvent.clientY - rect.top
-                            ]);
-                            mapObj.setZoomAround(mouseLatLng, roundedZoom, {{animate: false}});
-                        }}
-                        baseZoom = mapObj.getZoom();
-                        visualZoom = baseZoom;
-                    }}
-
-                    container.addEventListener('wheel', function(e) {{
-                        e.preventDefault();
-                        e.stopPropagation();
-                        lastMouseEvent = e;
-
-                        // Normalize delta
-                        var delta = -e.deltaY;
-                        if (e.deltaMode === 1) delta *= 40;
-
-                        // Accumulate visual zoom (smooth fractional changes)
-                        var zoomChange = delta / 300;
-                        visualZoom = Math.min(Math.max(visualZoom + zoomChange, mapObj.getMinZoom()), mapObj.getMaxZoom());
-
-                        // Apply CSS scale for instant visual feedback
-                        var scaleFactor = Math.pow(2, visualZoom - baseZoom);
-
-                        // Set transform origin to mouse position
-                        var rect = container.getBoundingClientRect();
-                        var ox = ((e.clientX - rect.left) / rect.width) * 100;
-                        var oy = ((e.clientY - rect.top) / rect.height) * 100;
-                        mapPane.style.transformOrigin = ox + '% ' + oy + '%';
-                        mapPane.style.transform = 'scale(' + scaleFactor + ')';
-
-                        // Debounce: commit actual zoom when scrolling stops
-                        clearTimeout(commitTimer);
-                        commitTimer = setTimeout(commitZoom, 180);
-                    }}, {{passive: false}});
-
-                    // Sync baseZoom on programmatic zoom changes (view switcher, click-nav)
-                    mapObj.on('zoomend', function() {{
-                        baseZoom = mapObj.getZoom();
-                        visualZoom = baseZoom;
-                        mapPane.style.transform = '';
-                    }});
-                }})();
 
                 // Remove Folium's default tile layer, heatmap, and markers
                 mapObj.eachLayer(function(layer) {{
