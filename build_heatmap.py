@@ -672,8 +672,15 @@ def get_top5_js(restaurant_data):
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 4px 0;
+            padding: 4px 6px;
             border-bottom: 1px solid #eee;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background 0.15s, transform 0.15s;
+        }}
+        .top5-item:hover {{
+            background: #fef2f2;
+            transform: translateX(2px);
         }}
         .top5-item:last-child {{ border-bottom: none; }}
         .top5-rank {{
@@ -735,6 +742,12 @@ def get_top5_js(restaurant_data):
         .search-result-item:hover {{ background: #f5f5f5; }}
         .search-result-name {{ font-weight: 600; color: #333; }}
         .search-result-info {{ color: #888; font-size: 12px; margin-top: 2px; }}
+        @keyframes top5pulse {{
+            0% {{ transform: scale(1); opacity: 0.8; }}
+            50% {{ transform: scale(1.3); opacity: 0.4; }}
+            100% {{ transform: scale(1); opacity: 0.8; }}
+        }}
+        .top5-pulse {{ animation: top5pulse 1s ease-in-out infinite; }}
     </style>
     <div id="search-panel">
         <input type="text" id="search-input" placeholder="Search restaurants..." autocomplete="off" />
@@ -760,7 +773,7 @@ def get_top5_js(restaurant_data):
             }} else {{
                 for (var i = 0; i < top5.length; i++) {{
                     var r = top5[i];
-                    html += '<div class="top5-item">'
+                    html += '<div class="top5-item" data-lat="' + r.lat + '" data-lon="' + r.lon + '" data-name="' + r.name + '" data-city="' + r.city + '" data-count="' + r.count + '" data-total="' + r.total.toFixed(0) + '">'
                         + '<span class="top5-rank">' + (i+1) + '.</span>'
                         + '<span class="top5-name" title="' + r.name + ' — ' + r.city + '">' + r.name + '</span>'
                         + '<span class="top5-stats"><span class="top5-count">' + r.count + 'x</span> · $' + r.total.toFixed(0) + '</span>'
@@ -833,6 +846,72 @@ def get_top5_js(restaurant_data):
 
             searchResults.style.display = 'none';
             searchInput.value = name;
+        }});
+
+        // Top 5 hover highlight and click-to-fly
+        var hoverMarker = null;
+
+        document.getElementById('top5-list').addEventListener('mouseover', function(e) {{
+            var item = e.target.closest('.top5-item');
+            if (!item) return;
+            var lat = parseFloat(item.dataset.lat);
+            var lon = parseFloat(item.dataset.lon);
+            if (isNaN(lat) || isNaN(lon)) return;
+
+            var mapObj = null;
+            for (var key in window) {{
+                if (key.startsWith('map_') && window[key] && typeof window[key].getBounds === 'function') {{
+                    mapObj = window[key]; break;
+                }}
+            }}
+            if (!mapObj) return;
+
+            if (hoverMarker) mapObj.removeLayer(hoverMarker);
+            hoverMarker = L.circleMarker([lat, lon], {{
+                radius: 22, color: '#e74c3c', weight: 3, fillColor: '#e74c3c',
+                fillOpacity: 0.18, className: 'top5-pulse'
+            }}).addTo(mapObj);
+        }});
+
+        document.getElementById('top5-list').addEventListener('mouseout', function(e) {{
+            var item = e.target.closest('.top5-item');
+            if (!item) return;
+            var mapObj = null;
+            for (var key in window) {{
+                if (key.startsWith('map_') && window[key] && typeof window[key].getBounds === 'function') {{
+                    mapObj = window[key]; break;
+                }}
+            }}
+            if (mapObj && hoverMarker) {{
+                mapObj.removeLayer(hoverMarker);
+                hoverMarker = null;
+            }}
+        }});
+
+        document.getElementById('top5-list').addEventListener('click', function(e) {{
+            var item = e.target.closest('.top5-item');
+            if (!item) return;
+            var lat = parseFloat(item.dataset.lat);
+            var lon = parseFloat(item.dataset.lon);
+            var name = item.dataset.name;
+            if (isNaN(lat) || isNaN(lon)) return;
+
+            var mapObj = null;
+            for (var key in window) {{
+                if (key.startsWith('map_') && window[key] && typeof window[key].getBounds === 'function') {{
+                    mapObj = window[key]; break;
+                }}
+            }}
+            if (!mapObj) return;
+
+            mapObj.flyTo([lat, lon], 16);
+
+            if (hoverMarker) mapObj.removeLayer(hoverMarker);
+            if (searchMarker) mapObj.removeLayer(searchMarker);
+            searchMarker = L.circleMarker([lat, lon], {{
+                radius: 18, color: '#e74c3c', weight: 3, fillColor: '#e74c3c', fillOpacity: 0.2
+            }}).addTo(mapObj);
+            searchMarker.bindPopup('<b>' + name + '</b> · ' + item.dataset.count + 'x · $' + item.dataset.total).openPopup();
         }});
 
         // Close search results on outside click
