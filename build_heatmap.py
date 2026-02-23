@@ -1140,6 +1140,18 @@ def get_top5_js(restaurant_data):
             if (mapObj) {{
                 clearInterval(checkMap);
 
+                // Google Maps-like smooth zoom & scroll
+                mapObj.options.zoomSnap = 0;
+                mapObj.options.zoomDelta = 0.25;
+                mapObj.options.wheelPxPerZoomLevel = 120;
+                mapObj.options.wheelDebounceTime = 40;
+                mapObj.options.inertia = true;
+                mapObj.options.inertiaDeceleration = 3000;
+                mapObj.options.inertiaMaxSpeed = 1500;
+                mapObj.options.easeLinearity = 0.25;
+                mapObj.scrollWheelZoom.disable();
+                mapObj.scrollWheelZoom.enable();
+
                 // Remove Folium's default tile layer, heatmap, and markers
                 mapObj.eachLayer(function(layer) {{
                     if (layer._url || layer._heat || layer.options.radius !== undefined) {{
