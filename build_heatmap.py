@@ -834,13 +834,15 @@ def get_top5_js(restaurant_data):
             }}
             if (!mapObj) return;
 
-            // Fly to location
-            mapObj.flyTo([lat, lon], 16);
+            // Pan to location, only zoom in if currently too far out
+            var curZoom = mapObj.getZoom();
+            var targetZoom = Math.max(curZoom, 14);
+            mapObj.setView([lat, lon], targetZoom, {{ animate: true, duration: 0.5 }});
 
-            // Add/move highlight marker
+            // Subtle highlight
             if (searchMarker) mapObj.removeLayer(searchMarker);
             searchMarker = L.circleMarker([lat, lon], {{
-                radius: 10, color: 'rgba(231,76,60,0.5)', weight: 1.5, fillColor: '#e74c3c', fillOpacity: 0.15
+                radius: 6, color: 'rgba(231,76,60,0.4)', weight: 1, fillColor: '#e74c3c', fillOpacity: 0.15
             }}).addTo(mapObj);
             searchMarker.bindPopup('<b>' + name + '</b>').openPopup();
 
@@ -904,12 +906,15 @@ def get_top5_js(restaurant_data):
             }}
             if (!mapObj) return;
 
-            mapObj.flyTo([lat, lon], 16);
+            // Pan to location, only zoom in if currently too far out
+            var curZoom = mapObj.getZoom();
+            var targetZoom = Math.max(curZoom, 14);
+            mapObj.setView([lat, lon], targetZoom, {{ animate: true, duration: 0.5 }});
 
             if (hoverMarker) mapObj.removeLayer(hoverMarker);
             if (searchMarker) mapObj.removeLayer(searchMarker);
             searchMarker = L.circleMarker([lat, lon], {{
-                radius: 10, color: 'rgba(231,76,60,0.5)', weight: 1.5, fillColor: '#e74c3c', fillOpacity: 0.15
+                radius: 6, color: 'rgba(231,76,60,0.4)', weight: 1, fillColor: '#e74c3c', fillOpacity: 0.15
             }}).addTo(mapObj);
             searchMarker.bindPopup('<b>' + name + '</b> · ' + item.dataset.count + 'x · $' + item.dataset.total).openPopup();
         }});
