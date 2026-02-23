@@ -667,6 +667,12 @@ def get_top5_js(restaurant_data):
         .leaflet-zoom-anim .leaflet-tile {{
             transition: none;
         }}
+        /* Prevent markers from bouncing during zoom */
+        .leaflet-marker-pane,
+        .leaflet-overlay-pane svg,
+        .leaflet-overlay-pane canvas {{
+            transition: none !important;
+        }}
         .leaflet-fade-anim .leaflet-tile-container {{
             transition: opacity 0.2s;
         }}
@@ -1180,8 +1186,9 @@ def get_top5_js(restaurant_data):
                 mapObj.options.zoomSnap = 1;
                 mapObj.options.wheelPxPerZoomLevel = 45;
                 mapObj.options.wheelDebounceTime = 30;
-                mapObj.options.zoomAnimation = true;
-                mapObj.options.zoomAnimationThreshold = 4;
+                mapObj.options.zoomAnimation = false;
+                mapObj.options.markerZoomAnimation = false;
+                mapObj.options.fadeAnimation = false;
 
                 // Smooth panning
                 mapObj.options.inertia = true;
