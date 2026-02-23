@@ -188,7 +188,7 @@ KNOWN_COORDS = {
     "costco tukwila|unknown": (47.4740, -122.2590),    # Costco Tukwila
     "costco kirkland|unknown": (47.6960, -122.1780),   # Costco Kirkland
     "costco pharr|pharr, tx": (26.2270, -98.2070),       # Costco Pharr, TX
-    "costco vancouver|vancouver, bc": (49.2760, -123.1060),  # Costco Vancouver, BC (Expo Blvd)
+    "costco richmond|richmond, bc": (49.1930, -123.1370),  # Costco Richmond, BC (9151 Bridgeport Rd)
     "auntie anne's|unknown": (47.6140, -122.3370),
     "district-h|unknown": (47.6145, -122.3350),
     "ikea seatle rest|unknown": (47.4430, -122.2630),  # IKEA Renton
@@ -561,7 +561,7 @@ costco_locations = [
     ('Costco Tukwila', 'Tukwila, WA', 4, 26.18),
     ('Costco Kirkland', 'Kirkland, WA', 4, 26.18),
     ('Costco Pharr', 'Pharr, TX', 2, 13.09),
-    ('Costco Vancouver', 'Vancouver, BC', 2, 13.08),
+    ('Costco Richmond', 'Richmond, BC', 2, 13.08),
 ]
 for name, city, count, total in costco_locations:
     key = (name.lower(), city)
