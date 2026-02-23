@@ -20,7 +20,7 @@
 - **Palette**: Red → Yellow gradient
 - **Markers**: Tiny red dots (3-4px)
 - **Vibe**: Standard clean data viz
-- **Status**: ✅ Already implemented
+- **Status**: ✅ Implemented
 
 ### View 2: "Dark Neon"
 - **Tiles**: CartoDB Dark Matter (black)
@@ -28,10 +28,11 @@
 - **Markers**: Tiny glowing cyan dots with subtle glow
 - **Vibe**: Feltron + Vietnam pin mashup — dramatic, editorial, cinematic
 - **Implementation**:
-  - [ ] Swap tile layer to `CartoDB dark_matter`
-  - [ ] Custom Leaflet heatmap gradient: `{0.2: '#0ff', 0.5: '#f0f', 0.8: '#ff0', 1.0: '#fff'}`
-  - [ ] Cyan CircleMarkers with `0.7` opacity
-  - [ ] Increase heatmap `radius` and `blur` for glow effect
+  - [x] Swap tile layer to `CartoDB dark_matter`
+  - [x] Custom Leaflet heatmap gradient: `{0.2: '#0ff', 0.5: '#f0f', 0.8: '#ff0', 1.0: '#fff'}`
+  - [x] Cyan CircleMarkers with `0.7` opacity
+  - [x] Increase heatmap `radius` and `blur` for glow effect
+- **Status**: ✅ Implemented
 
 ### View 3: "Dot Density"
 - **Tiles**: Stadia.AlidadeSmoothDark (dark muted)
@@ -39,10 +40,11 @@
 - **Markers**: Each visit = 1 glowing orange dot (like bombing map)
 - **Vibe**: Raw data, every single visit plotted as its own dot — visceral density
 - **Implementation**:
-  - [ ] Hide HeatMap layer entirely
-  - [ ] Plot 1 CircleMarker per visit (not per restaurant) for true density
-  - [ ] Small radius (2px), warm orange (`#ff6b35`), low opacity so overlap creates brightness
-  - [ ] Dark tile layer for contrast
+  - [x] Hide HeatMap layer entirely
+  - [x] Plot 1 CircleMarker per visit (not per restaurant) for true density
+  - [x] Small radius (2px), warm orange (`#ff6b35`), low opacity so overlap creates brightness
+  - [x] Dark tile layer for contrast
+- **Status**: ✅ Implemented
 
 ### View 4: "Minimal Blue"
 - **Tiles**: CartoDB Positron (light)
@@ -50,9 +52,10 @@
 - **Markers**: Blue dots, size scaled by visit count
 - **Vibe**: Feltron — clean, corporate, data-journalism
 - **Implementation**:
-  - [ ] Blue heatmap gradient: `{0.3: '#e8f4fd', 0.6: '#64b5f6', 0.8: '#1a73e8', 1.0: '#0d47a1'}`
-  - [ ] Blue CircleMarkers with thin stroke
-  - [ ] Slightly larger radius for high-visit spots
+  - [x] Blue heatmap gradient: `{0.3: '#e8f4fd', 0.6: '#64b5f6', 0.8: '#1a73e8', 1.0: '#0d47a1'}`
+  - [x] Blue CircleMarkers with thin stroke
+  - [x] Slightly larger radius for high-visit spots
+- **Status**: ✅ Implemented
 
 ### View 5: "Terrain Green"
 - **Tiles**: Stadia.AlidadeSmooth or OpenTopoMap (earthy/natural)
@@ -60,9 +63,10 @@
 - **Markers**: Green dots, organic feel, size = count
 - **Vibe**: Austin tree density + urban green analysis — nature/environment
 - **Implementation**:
-  - [ ] Green heatmap gradient: `{0.2: '#c8e6c9', 0.5: '#66bb6a', 0.8: '#2e7d32', 1.0: '#1b5e20'}`
-  - [ ] Green CircleMarkers
-  - [ ] Earthy tile layer to complement palette
+  - [x] Green heatmap gradient: `{0.2: '#c8e6c9', 0.5: '#66bb6a', 0.8: '#2e7d32', 1.0: '#1b5e20'}`
+  - [x] Green CircleMarkers
+  - [x] Earthy tile layer to complement palette
+- **Status**: ✅ Implemented
 
 ---
 
@@ -91,14 +95,14 @@
 
 ## Implementation Checklist
 
-- [ ] **Phase 1**: Build the view switcher UI (HTML/CSS in `get_top5_js`)
-- [ ] **Phase 2**: Define 5 view config objects in JS
-- [ ] **Phase 3**: Implement tile layer swapping
-- [ ] **Phase 4**: Implement heatmap gradient swapping  
-- [ ] **Phase 5**: Implement marker restyling
-- [ ] **Phase 6**: Wire up click handlers + localStorage persistence
-- [ ] **Phase 7**: Apply to both HTML files (global + Seattle)
-- [ ] **Phase 8**: Test all views, commit and push
+- [x] **Phase 1**: Build the view switcher UI (HTML/CSS in `get_top5_js`)
+- [x] **Phase 2**: Define 5 view config objects in JS
+- [x] **Phase 3**: Implement tile layer swapping
+- [x] **Phase 4**: Implement heatmap gradient swapping  
+- [x] **Phase 5**: Implement marker restyling
+- [x] **Phase 6**: Wire up click handlers + localStorage persistence
+- [x] **Phase 7**: Apply to both HTML files (global + Seattle)
+- [x] **Phase 8**: Test all views, commit and push
 
 ---
 
