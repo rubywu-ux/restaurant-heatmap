@@ -84,7 +84,7 @@ KNOWN_COORDS = {
 
     # ===== SEATTLE, WA - Wallingford / Fremont / Ballard =====
     "hokkaido rame|seattle": (47.6615, -122.29750),  # Hokkaido Ramen
-    "impeckable ch|seattle": (47.6580, -122.3460),
+    "impeckable ch|seattle": (47.6101, -122.3375),
     "oh bear cafe|seattle": (47.6520, -122.3500),
 
     # ===== SEATTLE, WA - Roosevelt / Northgate =====
