@@ -1140,18 +1140,54 @@ def get_top5_js(restaurant_data):
             if (mapObj) {{
                 clearInterval(checkMap);
 
-                // Google Maps-like smooth zoom & scroll
-                mapObj.options.zoomSnap = 0.5;
-                mapObj.options.zoomDelta = 1;
-                mapObj.options.wheelPxPerZoomLevel = 30;
-                mapObj.options.wheelDebounceTime = 0;
-                mapObj.options.zoomAnimationThreshold = 4;
+                // Disable Leaflet's sluggish built-in scroll zoom
+                mapObj.scrollWheelZoom.disable();
+                mapObj.options.zoomSnap = 0;  // allow fractional zoom levels
+
+                // Fast inertia panning
                 mapObj.options.inertia = true;
                 mapObj.options.inertiaDeceleration = 3400;
                 mapObj.options.inertiaMaxSpeed = 3000;
                 mapObj.options.easeLinearity = 0.2;
-                mapObj.scrollWheelZoom.disable();
-                mapObj.scrollWheelZoom.enable();
+                mapObj.options.zoomAnimationThreshold = 8;
+
+                // Custom Google Maps-style wheel zoom: instant, no debounce
+                (function() {{
+                    var container = mapObj.getContainer();
+                    var targetZoom = mapObj.getZoom();
+                    var zooming = false;
+
+                    container.addEventListener('wheel', function(e) {{
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        // Normalize scroll delta (trackpad vs mouse wheel)
+                        var delta = -e.deltaY;
+                        if (e.deltaMode === 1) delta *= 40;  // line mode
+                        var zoomChange = delta / 200;  // fast: ~1 level per 200px scroll
+
+                        targetZoom = Math.min(Math.max(targetZoom + zoomChange, mapObj.getMinZoom()), mapObj.getMaxZoom());
+
+                        if (!zooming) {{
+                            zooming = true;
+                            requestAnimationFrame(function doZoom() {{
+                                var curZoom = mapObj.getZoom();
+                                if (Math.abs(targetZoom - curZoom) > 0.01) {{
+                                    // Zoom towards mouse pointer position
+                                    var mouseLatLng = mapObj.containerPointToLatLng([e.clientX - container.getBoundingClientRect().left, e.clientY - container.getBoundingClientRect().top]);
+                                    mapObj.setZoomAround(mouseLatLng, targetZoom, {{animate: false}});
+                                    requestAnimationFrame(doZoom);
+                                }} else {{
+                                    zooming = false;
+                                }}
+                            }});
+                        }}
+                    }}, {{passive: false}});
+
+                    mapObj.on('zoomend', function() {{
+                        targetZoom = mapObj.getZoom();
+                    }});
+                }})();
 
                 // Remove Folium's default tile layer, heatmap, and markers
                 mapObj.eachLayer(function(layer) {{
