@@ -861,9 +861,8 @@ def get_top5_js(restaurant_data):
         <div id="search-results"></div>
     </div>
     <div id="view-switcher">
-        <button class="view-btn active" data-view="classic">Classic</button>
+        <button class="view-btn active" data-view="menu">🍽️ Menu</button>
         <button class="view-btn" data-view="dark">Dark Neon</button>
-        <button class="view-btn" data-view="menu">🍽️ Menu</button>
     </div>
     <div id="top5-panel">
         <h3>🍽 Top 5 in View</h3>
@@ -875,14 +874,6 @@ def get_top5_js(restaurant_data):
 
         // ---- View configurations ----
         var viewConfigs = {{
-            classic: {{
-                tiles: 'https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png',
-                attribution: '&copy; OpenStreetMap &copy; CARTO',
-                heatGradient: {{0.4: '#ffffb2', 0.6: '#fd8d3c', 0.8: '#e31a1c', 1.0: '#bd0026'}},
-                heatRadius: 15, heatBlur: 10,
-                dotColor: '#e74c3c', dotStroke: '#c0392b', dotOpacity: 0.6, dotRadius: 3,
-                dark: false, showHeat: true, showDots: false
-            }},
             dark: {{
                 tiles: 'https://{{s}}.basemaps.cartocdn.com/dark_all/{{z}}/{{x}}/{{y}}{{r}}.png',
                 attribution: '&copy; OpenStreetMap &copy; CARTO',
@@ -905,7 +896,7 @@ def get_top5_js(restaurant_data):
         var currentTileLayer = null;
         var currentHeatLayer = null;
         var currentMarkerLayer = null;
-        var currentView = localStorage.getItem('heatmapView') || 'classic';
+        var currentView = localStorage.getItem('heatmapView') || 'menu';
 
         function applyView(viewName, mapObj) {{
             var cfg = viewConfigs[viewName];
