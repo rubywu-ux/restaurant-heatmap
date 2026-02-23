@@ -2,6 +2,8 @@
 
 An interactive heatmap visualization of all restaurants I've dined at, built from personal transaction data.
 
+**[Live Demo](https://rubywu-ux.github.io/restaurant-heatmap/restaurant_heatmap.html)** | **[Seattle Detail](https://rubywu-ux.github.io/restaurant-heatmap/restaurant_heatmap_seattle.html)**
+
 ![Python](https://img.shields.io/badge/Python-3.9+-blue)
 ![Folium](https://img.shields.io/badge/Folium-0.20-green)
 
