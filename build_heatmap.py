@@ -817,51 +817,51 @@ def get_top5_js(restaurant_data):
         body.dark-view .view-btn:hover {{ background: rgba(255,255,255,0.08); }}
         body.dark-view .view-btn.active {{ background: #e74c3c; color: #fff; }}
 
-        /* Menu (fine dining) mode */
-        body.menu-view #top5-panel {{
+        /* Default (fine dining) mode */
+        body.default-view #top5-panel {{
             background: rgba(250,246,239,0.95);
             border: 1px solid #d4c5a9;
             box-shadow: 0 2px 12px rgba(107,82,51,0.15);
         }}
-        body.menu-view #top5-panel h3 {{
+        body.default-view #top5-panel h3 {{
             color: #5a4632;
             font-style: italic;
             letter-spacing: 0.5px;
         }}
-        body.menu-view .top5-rank {{ color: #8b6f47; }}
-        body.menu-view .top5-name {{ color: #4a3728; }}
-        body.menu-view .top5-count {{ color: #5a4632; }}
-        body.menu-view .top5-stats {{ color: #8b7355; }}
-        body.menu-view .top5-item:hover {{ background: rgba(168,185,140,0.15); }}
-        body.menu-view .top5-item {{ border-bottom-color: #e8dfd0; }}
-        body.menu-view #search-input {{
+        body.default-view .top5-rank {{ color: #8b6f47; }}
+        body.default-view .top5-name {{ color: #4a3728; }}
+        body.default-view .top5-count {{ color: #5a4632; }}
+        body.default-view .top5-stats {{ color: #8b7355; }}
+        body.default-view .top5-item:hover {{ background: rgba(168,185,140,0.15); }}
+        body.default-view .top5-item {{ border-bottom-color: #e8dfd0; }}
+        body.default-view #search-input {{
             background-color: rgba(250,246,239,0.95);
             color: #4a3728;
             border: 1px solid #d4c5a9;
             box-shadow: 0 2px 12px rgba(107,82,51,0.15);
         }}
-        body.menu-view #search-results {{
+        body.default-view #search-results {{
             background: rgba(250,246,239,0.97);
             border: 1px solid #d4c5a9;
         }}
-        body.menu-view .search-result-item {{ border-bottom-color: #e8dfd0; }}
-        body.menu-view .search-result-item:hover {{ background: rgba(168,185,140,0.12); }}
-        body.menu-view .search-result-name {{ color: #4a3728; }}
-        body.menu-view .search-result-info {{ color: #8b7355; }}
-        body.menu-view #view-switcher {{
+        body.default-view .search-result-item {{ border-bottom-color: #e8dfd0; }}
+        body.default-view .search-result-item:hover {{ background: rgba(168,185,140,0.12); }}
+        body.default-view .search-result-name {{ color: #4a3728; }}
+        body.default-view .search-result-info {{ color: #8b7355; }}
+        body.default-view #view-switcher {{
             background: rgba(250,246,239,0.95);
             border: 1px solid #d4c5a9;
         }}
-        body.menu-view .view-btn {{ color: #6b5233; border-right-color: #d4c5a9; }}
-        body.menu-view .view-btn:hover {{ background: rgba(168,185,140,0.15); }}
-        body.menu-view .view-btn.active {{ background: #6b5233; color: #faf6ef; }}
+        body.default-view .view-btn {{ color: #6b5233; border-right-color: #d4c5a9; }}
+        body.default-view .view-btn:hover {{ background: rgba(168,185,140,0.15); }}
+        body.default-view .view-btn.active {{ background: #6b5233; color: #faf6ef; }}
     </style>
     <div id="search-panel">
         <input type="text" id="search-input" placeholder="Search restaurants..." autocomplete="off" />
         <div id="search-results"></div>
     </div>
     <div id="view-switcher">
-        <button class="view-btn active" data-view="menu">🍽️ Menu</button>
+        <button class="view-btn active" data-view="default">Default</button>
         <button class="view-btn" data-view="dark">Dark Neon</button>
     </div>
     <div id="top5-panel">
@@ -882,7 +882,7 @@ def get_top5_js(restaurant_data):
                 dotColor: '#0ff', dotStroke: '#0aa', dotOpacity: 0.7, dotRadius: 3,
                 dark: true, showHeat: true, showDots: false
             }},
-            menu: {{
+            'default': {{
                 tiles: 'https://{{s}}.basemaps.cartocdn.com/light_nolabels/{{z}}/{{x}}/{{y}}{{r}}.png',
                 attribution: '&copy; OpenStreetMap &copy; CARTO',
                 heatGradient: {{0.2: '#f5f0e8', 0.4: '#d4c5a9', 0.6: '#a8b98c', 0.8: '#7a9e5a', 1.0: '#4a6741'}},
@@ -896,7 +896,7 @@ def get_top5_js(restaurant_data):
         var currentTileLayer = null;
         var currentHeatLayer = null;
         var currentMarkerLayer = null;
-        var currentView = localStorage.getItem('heatmapView') || 'menu';
+        var currentView = localStorage.getItem('heatmapView') || 'default';
 
         function applyView(viewName, mapObj) {{
             var cfg = viewConfigs[viewName];
@@ -916,11 +916,11 @@ def get_top5_js(restaurant_data):
             }});
 
             // Dark mode body class
-            document.body.classList.remove('dark-view', 'menu-view');
+            document.body.classList.remove('dark-view', 'default-view');
             if (cfg.dark) {{
                 document.body.classList.add('dark-view');
-            }} else if (viewName === 'menu') {{
-                document.body.classList.add('menu-view');
+            }} else if (viewName === 'default') {{
+                document.body.classList.add('default-view');
             }}
 
             // Swap tiles
