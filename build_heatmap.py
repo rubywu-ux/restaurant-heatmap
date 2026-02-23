@@ -647,6 +647,10 @@ def get_top5_js(restaurant_data):
     js_data = json.dumps(restaurant_data)
     return f"""
     <style>
+        /* Smooth circle scaling during zoom */
+        .leaflet-zoom-animated path {{
+            transition: d 0.25s ease, stroke-width 0.25s ease;
+        }}
         #top5-panel {{
             position: fixed;
             bottom: 20px;
@@ -959,17 +963,17 @@ for r in geocoded:
 
 HeatMap(heat_data, radius=15, blur=10, max_zoom=13, name='Heatmap').add_to(m)
 
-# Individual circle markers (no clustering — all visible at every zoom)
+# Individual circle markers — meter-based radius scales naturally with zoom
 for r in geocoded:
     popup_text = f"<b>{r['name']}</b><br>{r['city']}<br>Visits: {r['count']}<br>Spent: ${r['total']:.2f}"
-    folium.CircleMarker(
+    folium.Circle(
         location=[r['lat'], r['lon']],
-        radius=max(4, min(r['count'], 14)),
-        color='#c0392b',
+        radius=max(150, min(r['count'] * 60, 600)),
+        color='rgba(231,76,60,0.25)',
         weight=1,
         fill=True,
         fill_color='#e74c3c',
-        fill_opacity=0.7,
+        fill_opacity=0.18,
         popup=folium.Popup(popup_text, max_width=250),
         tooltip=r['name'],
     ).add_to(m)
@@ -996,14 +1000,14 @@ HeatMap(heat_seattle, radius=18, blur=12, max_zoom=16, name='Heatmap').add_to(m2
 
 for r in seattle_data:
     popup_text = f"<b>{r['name']}</b><br>{r['city']}<br>Visits: {r['count']}<br>Spent: ${r['total']:.2f}"
-    folium.CircleMarker(
+    folium.Circle(
         location=[r['lat'], r['lon']],
-        radius=max(5, min(r['count'], 16)),
-        color='#c0392b',
+        radius=max(40, min(r['count'] * 15, 150)),
+        color='rgba(231,76,60,0.25)',
         weight=1,
         fill=True,
         fill_color='#e74c3c',
-        fill_opacity=0.7,
+        fill_opacity=0.18,
         popup=folium.Popup(popup_text, max_width=250),
         tooltip=r['name'],
     ).add_to(m2)
