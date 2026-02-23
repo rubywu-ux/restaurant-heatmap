@@ -647,10 +647,6 @@ def get_top5_js(restaurant_data):
     js_data = json.dumps(restaurant_data)
     return f"""
     <style>
-        /* Smooth circle scaling during zoom */
-        .leaflet-zoom-animated path {{
-            transition: d 0.25s ease, stroke-width 0.25s ease;
-        }}
         #top5-panel {{
             position: fixed;
             bottom: 20px;
@@ -844,7 +840,7 @@ def get_top5_js(restaurant_data):
             // Add/move highlight marker
             if (searchMarker) mapObj.removeLayer(searchMarker);
             searchMarker = L.circleMarker([lat, lon], {{
-                radius: 14, color: 'transparent', weight: 0, fillColor: '#e74c3c', fillOpacity: 0.35
+                radius: 10, color: 'rgba(231,76,60,0.5)', weight: 1.5, fillColor: '#e74c3c', fillOpacity: 0.15
             }}).addTo(mapObj);
             searchMarker.bindPopup('<b>' + name + '</b>').openPopup();
 
@@ -872,8 +868,8 @@ def get_top5_js(restaurant_data):
 
             if (hoverMarker) mapObj.removeLayer(hoverMarker);
             hoverMarker = L.circleMarker([lat, lon], {{
-                radius: 16, color: 'transparent', weight: 0, fillColor: '#e74c3c',
-                fillOpacity: 0.3, className: 'top5-pulse'
+                radius: 10, color: 'rgba(231,76,60,0.4)', weight: 1.5, fillColor: '#e74c3c',
+                fillOpacity: 0.12, className: 'top5-pulse'
             }}).addTo(mapObj);
         }});
 
@@ -913,7 +909,7 @@ def get_top5_js(restaurant_data):
             if (hoverMarker) mapObj.removeLayer(hoverMarker);
             if (searchMarker) mapObj.removeLayer(searchMarker);
             searchMarker = L.circleMarker([lat, lon], {{
-                radius: 14, color: 'transparent', weight: 0, fillColor: '#e74c3c', fillOpacity: 0.35
+                radius: 10, color: 'rgba(231,76,60,0.5)', weight: 1.5, fillColor: '#e74c3c', fillOpacity: 0.15
             }}).addTo(mapObj);
             searchMarker.bindPopup('<b>' + name + '</b> · ' + item.dataset.count + 'x · $' + item.dataset.total).openPopup();
         }});
@@ -963,17 +959,17 @@ for r in geocoded:
 
 HeatMap(heat_data, radius=15, blur=10, max_zoom=13, name='Heatmap').add_to(m)
 
-# Individual circle markers — meter-based radius scales naturally with zoom
+# Small dot markers — fixed pixel size, clean and minimal like Zillow
 for r in geocoded:
     popup_text = f"<b>{r['name']}</b><br>{r['city']}<br>Visits: {r['count']}<br>Spent: ${r['total']:.2f}"
-    folium.Circle(
+    folium.CircleMarker(
         location=[r['lat'], r['lon']],
-        radius=max(150, min(r['count'] * 60, 600)),
-        color='rgba(231,76,60,0.25)',
-        weight=1,
+        radius=3,
+        color='#c0392b',
+        weight=0.5,
         fill=True,
         fill_color='#e74c3c',
-        fill_opacity=0.18,
+        fill_opacity=0.6,
         popup=folium.Popup(popup_text, max_width=250),
         tooltip=r['name'],
     ).add_to(m)
@@ -1000,14 +996,14 @@ HeatMap(heat_seattle, radius=18, blur=12, max_zoom=16, name='Heatmap').add_to(m2
 
 for r in seattle_data:
     popup_text = f"<b>{r['name']}</b><br>{r['city']}<br>Visits: {r['count']}<br>Spent: ${r['total']:.2f}"
-    folium.Circle(
+    folium.CircleMarker(
         location=[r['lat'], r['lon']],
-        radius=max(40, min(r['count'] * 15, 150)),
-        color='rgba(231,76,60,0.25)',
-        weight=1,
+        radius=4,
+        color='#c0392b',
+        weight=0.5,
         fill=True,
         fill_color='#e74c3c',
-        fill_opacity=0.18,
+        fill_opacity=0.6,
         popup=folium.Popup(popup_text, max_width=250),
         tooltip=r['name'],
     ).add_to(m2)
