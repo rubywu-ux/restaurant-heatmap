@@ -187,6 +187,8 @@ KNOWN_COORDS = {
     "costco shoreline|unknown": (47.7783, -122.3285),  # Costco Shoreline
     "costco tukwila|unknown": (47.4740, -122.2590),    # Costco Tukwila
     "costco kirkland|unknown": (47.6960, -122.1780),   # Costco Kirkland
+    "costco pharr|pharr, tx": (26.2270, -98.2070),       # Costco Pharr, TX
+    "costco vancouver|vancouver, bc": (49.2760, -123.1060),  # Costco Vancouver, BC (Expo Blvd)
     "auntie anne's|unknown": (47.6140, -122.3370),
     "district-h|unknown": (47.6145, -122.3350),
     "ikea seatle rest|unknown": (47.4430, -122.2630),  # IKEA Renton
@@ -552,12 +554,14 @@ for name, city, count in uber_eats:
     else:
         unique[key]['count'] += count
 
-# Add Costco locations split across 4 stores (26 total visits, $170.13 total)
+# Add Costco locations split across 6 stores (26 total visits, $170.13 total)
 costco_locations = [
-    ('Costco SoDo', 'Seattle, WA (SoDo)', 10, 65.43),
-    ('Costco Shoreline', 'Shoreline, WA', 7, 45.82),
-    ('Costco Tukwila', 'Tukwila, WA', 5, 32.76),
-    ('Costco Kirkland', 'Kirkland, WA', 4, 26.12),
+    ('Costco SoDo', 'Seattle, WA (SoDo)', 8, 52.34),
+    ('Costco Shoreline', 'Shoreline, WA', 6, 39.26),
+    ('Costco Tukwila', 'Tukwila, WA', 4, 26.18),
+    ('Costco Kirkland', 'Kirkland, WA', 4, 26.18),
+    ('Costco Pharr', 'Pharr, TX', 2, 13.09),
+    ('Costco Vancouver', 'Vancouver, BC', 2, 13.08),
 ]
 for name, city, count, total in costco_locations:
     key = (name.lower(), city)
