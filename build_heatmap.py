@@ -896,7 +896,7 @@ def get_top5_js(restaurant_data):
                 attribution: '&copy; OpenStreetMap &copy; CARTO',
                 heatGradient: {{0.2: '#f5f0e8', 0.4: '#d4c5a9', 0.6: '#a8b98c', 0.8: '#7a9e5a', 1.0: '#4a6741'}},
                 heatRadius: 18, heatBlur: 14,
-                dotColor: '#8b6f47', dotStroke: '#6b5233', dotOpacity: 0.7, dotRadius: 3,
+                dotColor: '#3d6b4f', dotStroke: '#2d4f3a', dotOpacity: 0.7, dotRadius: 3,
                 dark: false, showHeat: true, showDots: false,
                 bodyBg: '#faf6ef'
             }}
