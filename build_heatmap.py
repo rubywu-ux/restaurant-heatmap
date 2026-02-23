@@ -1141,14 +1141,15 @@ def get_top5_js(restaurant_data):
                 clearInterval(checkMap);
 
                 // Google Maps-like smooth zoom & scroll
-                mapObj.options.zoomSnap = 0;
-                mapObj.options.zoomDelta = 0.25;
-                mapObj.options.wheelPxPerZoomLevel = 120;
-                mapObj.options.wheelDebounceTime = 40;
+                mapObj.options.zoomSnap = 0.5;
+                mapObj.options.zoomDelta = 1;
+                mapObj.options.wheelPxPerZoomLevel = 30;
+                mapObj.options.wheelDebounceTime = 0;
+                mapObj.options.zoomAnimationThreshold = 4;
                 mapObj.options.inertia = true;
-                mapObj.options.inertiaDeceleration = 3000;
-                mapObj.options.inertiaMaxSpeed = 1500;
-                mapObj.options.easeLinearity = 0.25;
+                mapObj.options.inertiaDeceleration = 3400;
+                mapObj.options.inertiaMaxSpeed = 3000;
+                mapObj.options.easeLinearity = 0.2;
                 mapObj.scrollWheelZoom.disable();
                 mapObj.scrollWheelZoom.enable();
 
