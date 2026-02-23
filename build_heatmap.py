@@ -1163,7 +1163,7 @@ def get_top5_js(restaurant_data):
 
                 // Disable Leaflet's sluggish built-in scroll zoom
                 mapObj.scrollWheelZoom.disable();
-                mapObj.options.zoomSnap = 0;  // allow fractional zoom levels
+                mapObj.options.zoomSnap = 1;  // snap to whole levels (prevents tile flash)
 
                 // Fast inertia panning
                 mapObj.options.inertia = true;
@@ -1172,42 +1172,38 @@ def get_top5_js(restaurant_data):
                 mapObj.options.easeLinearity = 0.2;
                 mapObj.options.zoomAnimationThreshold = 8;
 
-                // Custom Google Maps-style wheel zoom: instant, no debounce
+                // Custom fast wheel zoom: accumulates scroll, commits at whole zoom levels
                 (function() {{
                     var container = mapObj.getContainer();
-                    var targetZoom = mapObj.getZoom();
-                    var zooming = false;
+                    var accumDelta = 0;
+                    var scrollTimer = null;
 
                     container.addEventListener('wheel', function(e) {{
                         e.preventDefault();
                         e.stopPropagation();
 
-                        // Normalize scroll delta (trackpad vs mouse wheel)
+                        // Normalize scroll delta
                         var delta = -e.deltaY;
-                        if (e.deltaMode === 1) delta *= 40;  // line mode
-                        var zoomChange = delta / 200;  // fast: ~1 level per 200px scroll
+                        if (e.deltaMode === 1) delta *= 40;
+                        accumDelta += delta;
 
-                        targetZoom = Math.min(Math.max(targetZoom + zoomChange, mapObj.getMinZoom()), mapObj.getMaxZoom());
-
-                        if (!zooming) {{
-                            zooming = true;
-                            requestAnimationFrame(function doZoom() {{
-                                var curZoom = mapObj.getZoom();
-                                if (Math.abs(targetZoom - curZoom) > 0.01) {{
-                                    // Zoom towards mouse pointer position
-                                    var mouseLatLng = mapObj.containerPointToLatLng([e.clientX - container.getBoundingClientRect().left, e.clientY - container.getBoundingClientRect().top]);
-                                    mapObj.setZoomAround(mouseLatLng, targetZoom, {{animate: false}});
-                                    requestAnimationFrame(doZoom);
-                                }} else {{
-                                    zooming = false;
-                                }}
-                            }});
+                        // Threshold: commit zoom when enough scroll accumulated (~150px per level)
+                        var levels = Math.trunc(accumDelta / 150);
+                        if (levels !== 0) {{
+                            accumDelta -= levels * 150;
+                            var curZoom = mapObj.getZoom();
+                            var newZoom = Math.min(Math.max(curZoom + levels, mapObj.getMinZoom()), mapObj.getMaxZoom());
+                            if (newZoom !== curZoom) {{
+                                var rect = container.getBoundingClientRect();
+                                var mouseLatLng = mapObj.containerPointToLatLng([e.clientX - rect.left, e.clientY - rect.top]);
+                                mapObj.setZoomAround(mouseLatLng, newZoom, {{animate: true, duration: 0.15}});
+                            }}
                         }}
-                    }}, {{passive: false}});
 
-                    mapObj.on('zoomend', function() {{
-                        targetZoom = mapObj.getZoom();
-                    }});
+                        // Reset accumulator if user stops scrolling
+                        clearTimeout(scrollTimer);
+                        scrollTimer = setTimeout(function() {{ accumDelta = 0; }}, 300);
+                    }}, {{passive: false}});
                 }})();
 
                 // Remove Folium's default tile layer, heatmap, and markers
