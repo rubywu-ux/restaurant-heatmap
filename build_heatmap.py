@@ -645,6 +645,12 @@ import json
 def get_top5_js(restaurant_data):
     """Generate JS that shows top 5 restaurants in current map view."""
     js_data = json.dumps(restaurant_data)
+    # Build per-visit dot data for "Dot Density" view
+    dot_data = []
+    for r in restaurant_data:
+        for _ in range(r['count']):
+            dot_data.append([r['lat'], r['lon']])
+    js_dot_data = json.dumps(dot_data)
     return f"""
     <style>
         #top5-panel {{
@@ -742,10 +748,85 @@ def get_top5_js(restaurant_data):
         .search-result-item:hover {{ background: #f5f5f5; }}
         .search-result-name {{ font-weight: 600; color: #333; }}
         .search-result-info {{ color: #888; font-size: 12px; margin-top: 2px; }}
+
+        /* View Switcher */
+        #view-switcher {{
+            position: fixed;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            gap: 0;
+            background: rgba(255,255,255,0.92);
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 12px;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }}
+        .view-btn {{
+            padding: 8px 16px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #555;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border-right: 1px solid rgba(0,0,0,0.08);
+            white-space: nowrap;
+        }}
+        .view-btn:last-child {{ border-right: none; }}
+        .view-btn:hover {{ background: rgba(0,0,0,0.05); }}
+        .view-btn.active {{
+            background: #333;
+            color: #fff;
+            font-weight: 600;
+        }}
+        /* Dark mode overrides for panels */
+        body.dark-view #top5-panel {{
+            background: rgba(30, 30, 30, 0.92);
+            color: #ddd;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+        }}
+        body.dark-view #top5-panel h3 {{ color: #eee; }}
+        body.dark-view .top5-rank {{ color: #aaa; }}
+        body.dark-view .top5-stats {{ color: #999; }}
+        body.dark-view .top5-count {{ color: #ddd; }}
+        body.dark-view .top5-item:hover {{ background: rgba(255,255,255,0.06); }}
+        body.dark-view .top5-item {{ border-bottom-color: rgba(255,255,255,0.08); }}
+        body.dark-view #search-input {{
+            background-color: rgba(30,30,30,0.92);
+            color: #eee;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+        }}
+        body.dark-view #search-results {{
+            background: rgba(30,30,30,0.95);
+        }}
+        body.dark-view .search-result-item {{ border-bottom-color: rgba(255,255,255,0.08); }}
+        body.dark-view .search-result-item:hover {{ background: rgba(255,255,255,0.06); }}
+        body.dark-view .search-result-name {{ color: #eee; }}
+        body.dark-view .search-result-info {{ color: #888; }}
+        body.dark-view #view-switcher {{
+            background: rgba(30,30,30,0.92);
+        }}
+        body.dark-view .view-btn {{ color: #aaa; border-right-color: rgba(255,255,255,0.08); }}
+        body.dark-view .view-btn:hover {{ background: rgba(255,255,255,0.08); }}
+        body.dark-view .view-btn.active {{ background: #e74c3c; color: #fff; }}
     </style>
     <div id="search-panel">
         <input type="text" id="search-input" placeholder="Search restaurants..." autocomplete="off" />
         <div id="search-results"></div>
+    </div>
+    <div id="view-switcher">
+        <button class="view-btn active" data-view="classic">Classic</button>
+        <button class="view-btn" data-view="dark">Dark Neon</button>
+        <button class="view-btn" data-view="dots">Dot Density</button>
+        <button class="view-btn" data-view="blue">Minimal Blue</button>
+        <button class="view-btn" data-view="green">Terrain Green</button>
     </div>
     <div id="top5-panel">
         <h3>🍽 Top 5 in View</h3>
@@ -753,6 +834,142 @@ def get_top5_js(restaurant_data):
     </div>
     <script>
         var allRestaurants = {js_data};
+        var dotData = {js_dot_data};
+
+        // ---- View configurations ----
+        var viewConfigs = {{
+            classic: {{
+                tiles: 'https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png',
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                heatGradient: {{0.4: '#ffffb2', 0.6: '#fd8d3c', 0.8: '#e31a1c', 1.0: '#bd0026'}},
+                heatRadius: 15, heatBlur: 10,
+                dotColor: '#e74c3c', dotStroke: '#c0392b', dotOpacity: 0.6, dotRadius: 3,
+                dark: false, showHeat: true, showDots: false
+            }},
+            dark: {{
+                tiles: 'https://{{s}}.basemaps.cartocdn.com/dark_all/{{z}}/{{x}}/{{y}}{{r}}.png',
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                heatGradient: {{0.15: '#001f3f', 0.3: '#0ff', 0.5: '#f0f', 0.75: '#ff0', 1.0: '#fff'}},
+                heatRadius: 18, heatBlur: 14,
+                dotColor: '#0ff', dotStroke: '#0aa', dotOpacity: 0.7, dotRadius: 3,
+                dark: true, showHeat: true, showDots: false
+            }},
+            dots: {{
+                tiles: 'https://{{s}}.basemaps.cartocdn.com/dark_all/{{z}}/{{x}}/{{y}}{{r}}.png',
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                heatGradient: null,
+                heatRadius: 0, heatBlur: 0,
+                dotColor: '#ff6b35', dotStroke: '#ff6b35', dotOpacity: 0.4, dotRadius: 2,
+                dark: true, showHeat: false, showDots: true
+            }},
+            blue: {{
+                tiles: 'https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png',
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                heatGradient: {{0.3: '#e8f4fd', 0.5: '#64b5f6', 0.75: '#1a73e8', 1.0: '#0d47a1'}},
+                heatRadius: 16, heatBlur: 12,
+                dotColor: '#1a73e8', dotStroke: '#0d47a1', dotOpacity: 0.5, dotRadius: 3,
+                dark: false, showHeat: true, showDots: false
+            }},
+            green: {{
+                tiles: 'https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png',
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                heatGradient: {{0.2: '#c8e6c9', 0.5: '#66bb6a', 0.8: '#2e7d32', 1.0: '#1b5e20'}},
+                heatRadius: 16, heatBlur: 12,
+                dotColor: '#4caf50', dotStroke: '#2e7d32', dotOpacity: 0.5, dotRadius: 3,
+                dark: false, showHeat: true, showDots: false
+            }}
+        }};
+
+        var currentTileLayer = null;
+        var currentHeatLayer = null;
+        var currentMarkerLayer = null;
+        var currentView = localStorage.getItem('heatmapView') || 'classic';
+
+        function applyView(viewName, mapObj) {{
+            var cfg = viewConfigs[viewName];
+            if (!cfg || !mapObj) return;
+            currentView = viewName;
+            localStorage.setItem('heatmapView', viewName);
+
+            // Update accent colors for current view
+            var cfg = viewConfigs[currentView];
+            var h3 = document.querySelector('#top5-panel h3');
+            if (h3) h3.style.borderBottomColor = cfg.dotColor;
+            document.querySelectorAll('.top5-rank').forEach(function(el) {{ el.style.color = cfg.dotColor; }});
+
+            // Update button states
+            document.querySelectorAll('.view-btn').forEach(function(b) {{
+                b.classList.toggle('active', b.dataset.view === viewName);
+            }});
+
+            // Dark mode body class
+            if (cfg.dark) {{
+                document.body.classList.add('dark-view');
+            }} else {{
+                document.body.classList.remove('dark-view');
+            }}
+
+            // Swap tiles
+            if (currentTileLayer) mapObj.removeLayer(currentTileLayer);
+            currentTileLayer = L.tileLayer(cfg.tiles, {{
+                attribution: cfg.attribution,
+                maxZoom: 19, subdomains: 'abcd'
+            }}).addTo(mapObj);
+
+            // Remove old heat layer
+            if (currentHeatLayer) mapObj.removeLayer(currentHeatLayer);
+            currentHeatLayer = null;
+
+            // Remove old markers
+            if (currentMarkerLayer) mapObj.removeLayer(currentMarkerLayer);
+            currentMarkerLayer = L.layerGroup().addTo(mapObj);
+
+            // Add heatmap
+            if (cfg.showHeat && cfg.heatGradient) {{
+                var heatPoints = [];
+                for (var i = 0; i < allRestaurants.length; i++) {{
+                    var r = allRestaurants[i];
+                    for (var j = 0; j < r.count; j++) {{
+                        heatPoints.push([r.lat, r.lon]);
+                    }}
+                }}
+                currentHeatLayer = L.heatLayer(heatPoints, {{
+                    radius: cfg.heatRadius,
+                    blur: cfg.heatBlur,
+                    maxZoom: 13,
+                    gradient: cfg.heatGradient
+                }}).addTo(mapObj);
+            }}
+
+            // Add markers
+            if (cfg.showDots) {{
+                // Dot density: one dot per visit
+                for (var i = 0; i < dotData.length; i++) {{
+                    L.circleMarker(dotData[i], {{
+                        radius: cfg.dotRadius,
+                        color: cfg.dotStroke,
+                        weight: 0.5,
+                        fill: true,
+                        fillColor: cfg.dotColor,
+                        fillOpacity: cfg.dotOpacity
+                    }}).addTo(currentMarkerLayer);
+                }}
+            }} else {{
+                // Restaurant markers with popups
+                for (var i = 0; i < allRestaurants.length; i++) {{
+                    var r = allRestaurants[i];
+                    var popup = '<b>' + r.name + '</b><br>' + r.city + '<br>Visits: ' + r.count + '<br>Spent: $' + r.total.toFixed(2);
+                    L.circleMarker([r.lat, r.lon], {{
+                        radius: cfg.dotRadius,
+                        color: cfg.dotStroke,
+                        weight: 0.5,
+                        fill: true,
+                        fillColor: cfg.dotColor,
+                        fillOpacity: cfg.dotOpacity
+                    }}).bindPopup(popup).bindTooltip(r.name).addTo(currentMarkerLayer);
+                }}
+            }}
+        }}
 
         function updateTop5(mapObj) {{
             var bounds = mapObj.getBounds();
@@ -835,8 +1052,9 @@ def get_top5_js(restaurant_data):
 
             // Subtle highlight
             if (searchMarker) mapObj.removeLayer(searchMarker);
+            var cfg = viewConfigs[currentView];
             searchMarker = L.circleMarker([lat, lon], {{
-                radius: 6, color: 'rgba(231,76,60,0.4)', weight: 1, fillColor: '#e74c3c', fillOpacity: 0.15
+                radius: 6, color: cfg.dotStroke, weight: 1, fillColor: cfg.dotColor, fillOpacity: 0.25
             }}).addTo(mapObj);
             searchMarker.bindPopup('<b>' + name + '</b>').openPopup();
 
@@ -868,10 +1086,25 @@ def get_top5_js(restaurant_data):
             mapObj.setView([lat, lon], targetZoom, {{ animate: true, duration: 0.5 }});
 
             if (searchMarker) mapObj.removeLayer(searchMarker);
+            var cfg = viewConfigs[currentView];
             searchMarker = L.circleMarker([lat, lon], {{
-                radius: 6, color: 'rgba(231,76,60,0.4)', weight: 1, fillColor: '#e74c3c', fillOpacity: 0.15
+                radius: 6, color: cfg.dotStroke, weight: 1, fillColor: cfg.dotColor, fillOpacity: 0.25
             }}).addTo(mapObj);
             searchMarker.bindPopup('<b>' + name + '</b> · ' + item.dataset.count + 'x · $' + item.dataset.total).openPopup();
+        }});
+
+        // View switcher click
+        document.getElementById('view-switcher').addEventListener('click', function(e) {{
+            var btn = e.target.closest('.view-btn');
+            if (!btn) return;
+            var viewName = btn.dataset.view;
+            var mapObj = null;
+            for (var key in window) {{
+                if (key.startsWith('map_') && window[key] && typeof window[key].getBounds === 'function') {{
+                    mapObj = window[key]; break;
+                }}
+            }}
+            if (mapObj) applyView(viewName, mapObj);
         }});
 
         // Close search results on outside click
@@ -892,6 +1125,17 @@ def get_top5_js(restaurant_data):
             }}
             if (mapObj) {{
                 clearInterval(checkMap);
+
+                // Remove Folium's default tile layer, heatmap, and markers
+                mapObj.eachLayer(function(layer) {{
+                    if (layer._url || layer._heat || layer.options.radius !== undefined) {{
+                        mapObj.removeLayer(layer);
+                    }}
+                }});
+
+                // Apply saved or default view
+                applyView(currentView, mapObj);
+
                 mapObj.on('moveend', function() {{ updateTop5(mapObj); }});
                 mapObj.on('zoomend', function() {{ updateTop5(mapObj); }});
                 updateTop5(mapObj);
