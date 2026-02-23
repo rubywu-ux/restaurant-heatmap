@@ -861,8 +861,9 @@ def get_top5_js(restaurant_data):
         <div id="search-results"></div>
     </div>
     <div id="view-switcher">
-        <button class="view-btn active" data-view="default">Default</button>
+        <button class="view-btn active" data-view="classic">Classic</button>
         <button class="view-btn" data-view="dark">Dark Neon</button>
+        <button class="view-btn" data-view="menu">🍽️ Menu</button>
     </div>
     <div id="top5-panel">
         <h3>🍽 Top 5 in View</h3>
@@ -874,12 +875,12 @@ def get_top5_js(restaurant_data):
 
         // ---- View configurations ----
         var viewConfigs = {{
-            'default': {{
-                tiles: 'https://{{s}}.basemaps.cartocdn.com/light_nolabels/{{z}}/{{x}}/{{y}}{{r}}.png',
+            classic: {{
+                tiles: 'https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png',
                 attribution: '&copy; OpenStreetMap &copy; CARTO',
-                heatGradient: {{0.2: '#f5f0e8', 0.4: '#d4c5a9', 0.6: '#a8b98c', 0.8: '#7a9e5a', 1.0: '#4a6741'}},
-                heatRadius: 18, heatBlur: 14,
-                dotColor: '#3d6b4f', dotStroke: '#2d4f3a', dotOpacity: 0.7, dotRadius: 3,
+                heatGradient: {{0.4: '#ffffb2', 0.6: '#fd8d3c', 0.8: '#e31a1c', 1.0: '#bd0026'}},
+                heatRadius: 15, heatBlur: 10,
+                dotColor: '#e74c3c', dotStroke: '#c0392b', dotOpacity: 0.6, dotRadius: 3,
                 dark: false, showHeat: true, showDots: false
             }},
             dark: {{
@@ -890,13 +891,21 @@ def get_top5_js(restaurant_data):
                 dotColor: '#0ff', dotStroke: '#0aa', dotOpacity: 0.7, dotRadius: 3,
                 dark: true, showHeat: true, showDots: false
             }},
+            menu: {{
+                tiles: 'https://{{s}}.basemaps.cartocdn.com/light_nolabels/{{z}}/{{x}}/{{y}}{{r}}.png',
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                heatGradient: {{0.2: '#f5f0e8', 0.4: '#d4c5a9', 0.6: '#a8b98c', 0.8: '#7a9e5a', 1.0: '#4a6741'}},
+                heatRadius: 18, heatBlur: 14,
+                dotColor: '#3d6b4f', dotStroke: '#2d4f3a', dotOpacity: 0.7, dotRadius: 3,
+                dark: false, showHeat: true, showDots: false,
+                bodyBg: '#faf6ef'
             }}
         }};
 
         var currentTileLayer = null;
         var currentHeatLayer = null;
         var currentMarkerLayer = null;
-        var currentView = localStorage.getItem('heatmapView') || 'default';
+        var currentView = localStorage.getItem('heatmapView') || 'classic';
 
         function applyView(viewName, mapObj) {{
             var cfg = viewConfigs[viewName];
@@ -919,7 +928,7 @@ def get_top5_js(restaurant_data):
             document.body.classList.remove('dark-view', 'menu-view');
             if (cfg.dark) {{
                 document.body.classList.add('dark-view');
-            }} else if (viewName === 'default') {{
+            }} else if (viewName === 'menu') {{
                 document.body.classList.add('menu-view');
             }}
 
