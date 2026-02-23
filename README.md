@@ -33,6 +33,8 @@ This project parses bank/credit card transaction data and Uber Eats order histor
   - **Seattle detail map** — zoomed into the Seattle metro area
 - Heatmap weighted by visit frequency
 - Clickable markers with restaurant name, city, visit count, and total spend
+- **Search bar** — find any restaurant by name or city, click to fly to its location
+- **Top 5 panel** — dynamically shows the top 5 most-visited restaurants in the current map view
 
 ## Data Sources
 
