@@ -742,12 +742,6 @@ def get_top5_js(restaurant_data):
         .search-result-item:hover {{ background: #f5f5f5; }}
         .search-result-name {{ font-weight: 600; color: #333; }}
         .search-result-info {{ color: #888; font-size: 12px; margin-top: 2px; }}
-        @keyframes top5pulse {{
-            0% {{ transform: scale(1); opacity: 0.8; }}
-            50% {{ transform: scale(1.3); opacity: 0.4; }}
-            100% {{ transform: scale(1); opacity: 0.8; }}
-        }}
-        .top5-pulse {{ animation: top5pulse 1s ease-in-out infinite; }}
     </style>
     <div id="search-panel">
         <input type="text" id="search-input" placeholder="Search restaurants..." autocomplete="off" />
@@ -850,45 +844,7 @@ def get_top5_js(restaurant_data):
             searchInput.value = name;
         }});
 
-        // Top 5 hover highlight and click-to-fly
-        var hoverMarker = null;
-
-        document.getElementById('top5-list').addEventListener('mouseover', function(e) {{
-            var item = e.target.closest('.top5-item');
-            if (!item) return;
-            var lat = parseFloat(item.dataset.lat);
-            var lon = parseFloat(item.dataset.lon);
-            if (isNaN(lat) || isNaN(lon)) return;
-
-            var mapObj = null;
-            for (var key in window) {{
-                if (key.startsWith('map_') && window[key] && typeof window[key].getBounds === 'function') {{
-                    mapObj = window[key]; break;
-                }}
-            }}
-            if (!mapObj) return;
-
-            if (hoverMarker) mapObj.removeLayer(hoverMarker);
-            hoverMarker = L.circleMarker([lat, lon], {{
-                radius: 10, color: 'rgba(231,76,60,0.4)', weight: 1.5, fillColor: '#e74c3c',
-                fillOpacity: 0.12, className: 'top5-pulse'
-            }}).addTo(mapObj);
-        }});
-
-        document.getElementById('top5-list').addEventListener('mouseout', function(e) {{
-            var item = e.target.closest('.top5-item');
-            if (!item) return;
-            var mapObj = null;
-            for (var key in window) {{
-                if (key.startsWith('map_') && window[key] && typeof window[key].getBounds === 'function') {{
-                    mapObj = window[key]; break;
-                }}
-            }}
-            if (mapObj && hoverMarker) {{
-                mapObj.removeLayer(hoverMarker);
-                hoverMarker = null;
-            }}
-        }});
+        // Top 5 click-to-navigate
 
         document.getElementById('top5-list').addEventListener('click', function(e) {{
             var item = e.target.closest('.top5-item');
@@ -911,7 +867,6 @@ def get_top5_js(restaurant_data):
             var targetZoom = Math.max(curZoom, 14);
             mapObj.setView([lat, lon], targetZoom, {{ animate: true, duration: 0.5 }});
 
-            if (hoverMarker) mapObj.removeLayer(hoverMarker);
             if (searchMarker) mapObj.removeLayer(searchMarker);
             searchMarker = L.circleMarker([lat, lon], {{
                 radius: 6, color: 'rgba(231,76,60,0.4)', weight: 1, fillColor: '#e74c3c', fillOpacity: 0.15
