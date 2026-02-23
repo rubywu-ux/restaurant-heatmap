@@ -653,6 +653,24 @@ def get_top5_js(restaurant_data):
     js_dot_data = json.dumps(dot_data)
     return f"""
     <style>
+        /* Prevent tile blanking during zoom */
+        .leaflet-tile-container {{
+            will-change: transform;
+        }}
+        .leaflet-tile {{
+            opacity: 1 !important;
+            transition: opacity 0.15s ease-in;
+        }}
+        .leaflet-tile-loaded {{
+            opacity: 1 !important;
+        }}
+        .leaflet-zoom-anim .leaflet-tile {{
+            transition: none;
+        }}
+        .leaflet-fade-anim .leaflet-tile-container {{
+            transition: opacity 0.2s;
+        }}
+
         #top5-panel {{
             position: fixed;
             bottom: 20px;
@@ -927,7 +945,10 @@ def get_top5_js(restaurant_data):
             if (currentTileLayer) mapObj.removeLayer(currentTileLayer);
             currentTileLayer = L.tileLayer(cfg.tiles, {{
                 attribution: cfg.attribution,
-                maxZoom: 19, subdomains: 'abcd'
+                maxZoom: 19, subdomains: 'abcd',
+                keepBuffer: 8,
+                updateWhenZooming: false,
+                updateWhenIdle: true
             }}).addTo(mapObj);
 
             // Remove old heat layer
