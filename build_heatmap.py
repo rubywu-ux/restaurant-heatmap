@@ -4,6 +4,7 @@ Reads transactions.csv + Uber Eats data, geocodes restaurants, builds Folium hea
 """
 import csv
 import re
+from datetime import datetime
 import folium
 from folium.plugins import HeatMap
 
@@ -385,11 +386,20 @@ FALSE_POSITIVES = {
 ###############################################################################
 # Step 1: Read CSV and filter dining transactions
 ###############################################################################
+DATE_START = datetime(2025, 1, 1)
+DATE_END = datetime(2026, 3, 4)
 restaurants = []
 
 with open('transactions.csv', 'r', encoding='utf-8') as f:
     reader = csv.DictReader(f)
     for row in reader:
+        # Date filter
+        try:
+            txn_date = datetime.strptime(row['date'].strip(), '%Y-%m-%d')
+        except (ValueError, KeyError):
+            continue
+        if txn_date < DATE_START or txn_date > DATE_END:
+            continue
         name = row['name'].strip()
         category = row['category'].strip()
         amount = float(row['amount']) if row['amount'] else 0
