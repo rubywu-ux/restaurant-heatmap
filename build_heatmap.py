@@ -4,8 +4,9 @@ Reads transactions.csv + Uber Eats data, geocodes restaurants, builds Folium hea
 """
 import csv
 import re
+from datetime import datetime
 import folium
-from folium.plugins import HeatMap, MarkerCluster
+from folium.plugins import HeatMap
 
 ###############################################################################
 # KNOWN RESTAURANT COORDINATES
@@ -73,6 +74,12 @@ KNOWN_COORDS = {
 
     # ===== SEATTLE, WA - Downtown / Belltown / Pike Place =====
     "sweetgreen so|seattle": (47.6100, -122.3400),  # Sweetgreen South Lake Union
+    "sweetgreen|seattle": (47.6100, -122.3400),
+    "sweetgreen|unknown": (47.6100, -122.3400),
+    "sweetgreen|seattle, wa (slu)": (47.6100, -122.3400),
+    "sweetgreen cap hill|seattle": (47.6155, -122.3210),  # Sweetgreen Capitol Hill
+    "sweetgreen cap hill|seattle, wa (capitol hill)": (47.6155, -122.3210),
+    "sweetgreen capitol hill|seattle, wa (capitol hill)": (47.6155, -122.3210),
     "www.sweetgreen.com|unknown": (47.6100, -122.3400),
     "wild cumin|unknown": (47.6140, -122.3440),
     "ludi's restau|unknown": (47.6070, -122.3340),  # Ludi's
@@ -144,7 +151,7 @@ KNOWN_COORDS = {
     "alibertos sea|seattle": (47.6630, -122.3131),
     "tst* portage|unknown": (47.6075, -122.3340),
     "uep*shanghai|unknown": (47.6155, -122.3450),  # Shanghai Garden?
-    "fusion feast pizza|unknown": (47.6400, -122.3350),
+    "fusion feast pizza|unknown": (49.1815, -123.1370),  # 5300 No. 3 Rd, Richmond, BC
     "lil woodys sea|unknown": (47.6155, -122.3210),  # Lil Woody's
     "cheesecake se|seattle": (47.6130, -122.3370),  # Cheesecake Factory
     "red robin|unknown": (47.6160, -122.3480),
@@ -176,7 +183,13 @@ KNOWN_COORDS = {
     "starbucks|unknown": (47.6097, -122.3425),
 
     # ===== SEATTLE, WA - food court / misc =====
-    "costco|unknown": (47.5550, -122.3750),  # Seattle Costco (SoDo-ish)
+    # Costco locations split across 4 stores
+    "costco sodo|unknown": (47.5632, -122.3293),      # Costco SoDo, Seattle
+    "costco shoreline|unknown": (47.7783, -122.3285),  # Costco Shoreline
+    "costco tukwila|unknown": (47.4740, -122.2590),    # Costco Tukwila
+    "costco kirkland|unknown": (47.6960, -122.1780),   # Costco Kirkland
+    "costco pharr|pharr, tx": (26.2270, -98.2070),       # Costco Pharr, TX
+    "costco richmond|richmond, bc": (49.1930, -123.1370),  # Costco Richmond, BC (9151 Bridgeport Rd)
     "auntie anne's|unknown": (47.6140, -122.3370),
     "district-h|unknown": (47.6145, -122.3350),
     "ikea seatle rest|unknown": (47.4430, -122.2630),  # IKEA Renton
@@ -254,7 +267,7 @@ KNOWN_COORDS = {
     "tst* el porte|san francisco": (37.7960, -122.4070),  # El Porteño
     "sf chickenbox|san francisco": (37.7850, -122.4100),
     "affis marin g|san francisco": (37.7870, -122.4090),
-    "www.sweetgree|los angeles": (37.7900, -122.4000),  # Actually these are Sweetgreen orders
+    "www.sweetgree|los angeles": (47.6100, -122.3400),  # Actually Seattle Sweetgreen orders
     "dishdash 190 s. murp|sunnyvale": (37.3770, -122.0360),
     "nature's orga|sunnyvale": (37.3775, -122.0365),
     "99 ranch mark|cupertino": (37.3230, -122.0135),
@@ -373,28 +386,27 @@ FALSE_POSITIVES = {
 ###############################################################################
 # Step 1: Read CSV and filter dining transactions
 ###############################################################################
+DATE_START = datetime(2025, 1, 1)
+DATE_END = datetime(2026, 3, 4)
 restaurants = []
 
 with open('transactions.csv', 'r', encoding='utf-8') as f:
     reader = csv.DictReader(f)
     for row in reader:
+        # Date filter
+        try:
+            txn_date = datetime.strptime(row['date'].strip(), '%Y-%m-%d')
+        except (ValueError, KeyError):
+            continue
+        if txn_date < DATE_START or txn_date > DATE_END:
+            continue
         name = row['name'].strip()
         category = row['category'].strip()
         amount = float(row['amount']) if row['amount'] else 0
         if amount <= 0:
             continue
         is_eatout = category == 'Eat out'
-        known_keywords = [
-            'jollibee', 'chick-fil-a', 'red robin', 'whataburger', 'wendy',
-            'mcdonald', 'taco bell', 'dairy queen', 'domino', 'subway',
-            'panda express', 'five guys', 'raising cane', 'chipotle',
-            'shake shack', 'in-n-out', 'jack in the b', 'sonic',
-            'auntie anne', 'starbucks', 'tim horton',
-            'taco palenque', 'texas roadhou',
-            'einstein bros', 'einsteinbros',
-        ]
-        is_known = any(kw in name.lower() for kw in known_keywords)
-        if not is_eatout and not is_known:
+        if not is_eatout:
             continue
         restaurants.append({
             'date': row['date'],
@@ -465,6 +477,10 @@ for r in restaurants:
     elif 'uw seattle be' in r['name'].lower():
         city = 'Seattle, WA (UW Campus)'
         clean_name = 'UW Seattle Bean'
+
+    # Skip individual Costco entries — they'll be added manually below as split locations
+    if lower == 'costco':
+        continue
 
     key = (clean_name.lower().strip(), city)
     if key not in unique:
@@ -538,6 +554,38 @@ for name, city, count in uber_eats:
     else:
         unique[key]['count'] += count
 
+# Add Costco locations split across 6 stores (26 total visits, $170.13 total)
+costco_locations = [
+    ('Costco SoDo', 'Seattle, WA (SoDo)', 8, 52.34),
+    ('Costco Shoreline', 'Shoreline, WA', 6, 39.26),
+    ('Costco Tukwila', 'Tukwila, WA', 4, 26.18),
+    ('Costco Kirkland', 'Kirkland, WA', 4, 26.18),
+    ('Costco Pharr', 'Pharr, TX', 2, 13.09),
+    ('Costco Richmond', 'Richmond, BC', 2, 13.08),
+]
+for name, city, count, total in costco_locations:
+    key = (name.lower(), city)
+    unique[key] = {'name': name, 'city': city, 'count': count, 'total': total}
+
+# Consolidate all Sweetgreen visits into Seattle, then split 2 to Capitol Hill
+sg_total_count = 0
+sg_total_spent = 0
+sg_keys_to_remove = []
+for key, info in unique.items():
+    if info['name'].lower().startswith('sweetgreen') or info['name'].lower().startswith('www.sweetgre'):
+        sg_total_count += info['count']
+        sg_total_spent += info['total']
+        sg_keys_to_remove.append(key)
+for k in sg_keys_to_remove:
+    del unique[k]
+# 2 visits at Capitol Hill, rest at SLU
+sg_cap_hill_count = 2
+sg_cap_hill_total = round(sg_total_spent * (2 / max(sg_total_count, 1)), 2)
+sg_slu_count = sg_total_count - sg_cap_hill_count
+sg_slu_total = round(sg_total_spent - sg_cap_hill_total, 2)
+unique[('sweetgreen', 'Seattle, WA (SLU)')] = {'name': 'Sweetgreen', 'city': 'Seattle, WA (SLU)', 'count': sg_slu_count, 'total': sg_slu_total}
+unique[('sweetgreen cap hill', 'Seattle, WA (Capitol Hill)')] = {'name': 'Sweetgreen Capitol Hill', 'city': 'Seattle, WA (Capitol Hill)', 'count': sg_cap_hill_count, 'total': sg_cap_hill_total}
+
 ###############################################################################
 # Step 3: Geocode - match to known coordinates
 ###############################################################################
@@ -597,8 +645,32 @@ import json
 def get_top5_js(restaurant_data):
     """Generate JS that shows top 5 restaurants in current map view."""
     js_data = json.dumps(restaurant_data)
+    # Build per-visit dot data for "Dot Density" view
+    dot_data = []
+    for r in restaurant_data:
+        for _ in range(r['count']):
+            dot_data.append([r['lat'], r['lon']])
+    js_dot_data = json.dumps(dot_data)
     return f"""
     <style>
+        /* Prevent tile blanking during zoom */
+        .leaflet-tile-container {{
+            will-change: transform;
+        }}
+        .leaflet-tile {{
+            opacity: 1 !important;
+            transition: opacity 0.15s ease-in;
+        }}
+        .leaflet-tile-loaded {{
+            opacity: 1 !important;
+        }}
+        .leaflet-zoom-anim .leaflet-tile {{
+            transition: none;
+        }}
+        .leaflet-fade-anim .leaflet-tile-container {{
+            transition: opacity 0.2s;
+        }}
+
         #top5-panel {{
             position: fixed;
             bottom: 20px;
@@ -624,8 +696,15 @@ def get_top5_js(restaurant_data):
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 4px 0;
+            padding: 4px 6px;
             border-bottom: 1px solid #eee;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background 0.15s, transform 0.15s;
+        }}
+        .top5-item:hover {{
+            background: #fef2f2;
+            transform: translateX(2px);
         }}
         .top5-item:last-child {{ border-bottom: none; }}
         .top5-rank {{
@@ -652,8 +731,8 @@ def get_top5_js(restaurant_data):
         }}
         #search-panel {{
             position: fixed;
-            top: 15px;
-            right: 60px;
+            top: 60px;
+            right: 15px;
             z-index: 9999;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }}
@@ -687,10 +766,121 @@ def get_top5_js(restaurant_data):
         .search-result-item:hover {{ background: #f5f5f5; }}
         .search-result-name {{ font-weight: 600; color: #333; }}
         .search-result-info {{ color: #888; font-size: 12px; margin-top: 2px; }}
+
+        /* View Switcher */
+        #view-switcher {{
+            position: fixed;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            gap: 0;
+            background: rgba(255,255,255,0.92);
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 12px;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }}
+        .view-btn {{
+            padding: 8px 16px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #555;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border-right: 1px solid rgba(0,0,0,0.08);
+            white-space: nowrap;
+        }}
+        .view-btn:last-child {{ border-right: none; }}
+        .view-btn:hover {{ background: rgba(0,0,0,0.05); }}
+        .view-btn.active {{
+            background: #333;
+            color: #fff;
+            font-weight: 600;
+        }}
+        /* Dark mode overrides for panels */
+        body.dark-view #top5-panel {{
+            background: rgba(30, 30, 30, 0.92);
+            color: #ddd;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+        }}
+        body.dark-view #top5-panel h3 {{ color: #eee; }}
+        body.dark-view .top5-rank {{ color: #aaa; }}
+        body.dark-view .top5-stats {{ color: #999; }}
+        body.dark-view .top5-count {{ color: #ddd; }}
+        body.dark-view .top5-item:hover {{ background: rgba(255,255,255,0.06); }}
+        body.dark-view .top5-item {{ border-bottom-color: rgba(255,255,255,0.08); }}
+        body.dark-view #search-input {{
+            background-color: rgba(30,30,30,0.92);
+            color: #eee;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+        }}
+        body.dark-view #search-results {{
+            background: rgba(30,30,30,0.95);
+        }}
+        body.dark-view .search-result-item {{ border-bottom-color: rgba(255,255,255,0.08); }}
+        body.dark-view .search-result-item:hover {{ background: rgba(255,255,255,0.06); }}
+        body.dark-view .search-result-name {{ color: #eee; }}
+        body.dark-view .search-result-info {{ color: #888; }}
+        body.dark-view #view-switcher {{
+            background: rgba(30,30,30,0.92);
+        }}
+        body.dark-view .view-btn {{ color: #aaa; border-right-color: rgba(255,255,255,0.08); }}
+        body.dark-view .view-btn:hover {{ background: rgba(255,255,255,0.08); }}
+        body.dark-view .view-btn.active {{ background: #e74c3c; color: #fff; }}
+
+        /* Default (fine dining) mode */
+        body.default-view #top5-panel {{
+            background: rgba(250,246,239,0.95);
+            border: 1px solid #d4c5a9;
+            box-shadow: 0 2px 12px rgba(107,82,51,0.15);
+        }}
+        body.default-view #top5-panel h3 {{
+            color: #5a4632;
+            font-style: italic;
+            letter-spacing: 0.5px;
+        }}
+        body.default-view .top5-rank {{ color: #8b6f47; }}
+        body.default-view .top5-name {{ color: #4a3728; }}
+        body.default-view .top5-count {{ color: #5a4632; }}
+        body.default-view .top5-stats {{ color: #8b7355; }}
+        body.default-view .top5-item:hover {{ background: rgba(168,185,140,0.15); }}
+        body.default-view .top5-item {{ border-bottom-color: #e8dfd0; }}
+        body.default-view #search-input {{
+            background-color: rgba(250,246,239,0.95);
+            color: #4a3728;
+            border: 1px solid #d4c5a9;
+            box-shadow: 0 2px 12px rgba(107,82,51,0.15);
+        }}
+        body.default-view #search-results {{
+            background: rgba(250,246,239,0.97);
+            border: 1px solid #d4c5a9;
+        }}
+        body.default-view .search-result-item {{ border-bottom-color: #e8dfd0; }}
+        body.default-view .search-result-item:hover {{ background: rgba(168,185,140,0.12); }}
+        body.default-view .search-result-name {{ color: #4a3728; }}
+        body.default-view .search-result-info {{ color: #8b7355; }}
+        body.default-view #view-switcher {{
+            background: rgba(250,246,239,0.95);
+            border: 1px solid #d4c5a9;
+        }}
+        body.default-view .view-btn {{ color: #6b5233; border-right-color: #d4c5a9; }}
+        body.default-view .view-btn:hover {{ background: rgba(168,185,140,0.15); }}
+        body.default-view .view-btn.active {{ background: #6b5233; color: #faf6ef; }}
     </style>
     <div id="search-panel">
         <input type="text" id="search-input" placeholder="Search restaurants..." autocomplete="off" />
         <div id="search-results"></div>
+    </div>
+    <div id="view-switcher">
+        <button class="view-btn active" data-view="default">Default</button>
+        <button class="view-btn" data-view="dark">Dark Neon</button>
     </div>
     <div id="top5-panel">
         <h3>🍽 Top 5 in View</h3>
@@ -698,6 +888,137 @@ def get_top5_js(restaurant_data):
     </div>
     <script>
         var allRestaurants = {js_data};
+        var dotData = {js_dot_data};
+
+        // ---- View configurations ----
+        var viewConfigs = {{
+            dark: {{
+                tiles: 'https://{{s}}.basemaps.cartocdn.com/dark_all/{{z}}/{{x}}/{{y}}{{r}}.png',
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                heatGradient: {{0.15: '#001f3f', 0.3: '#0ff', 0.5: '#f0f', 0.75: '#ff0', 1.0: '#fff'}},
+                heatRadius: 18, heatBlur: 14,
+                dotColor: '#0ff', dotStroke: '#0aa', dotOpacity: 0.7, dotRadius: 3,
+                dark: true, showHeat: true, showDots: false
+            }},
+            'default': {{
+                tiles: 'https://{{s}}.basemaps.cartocdn.com/light_nolabels/{{z}}/{{x}}/{{y}}{{r}}.png',
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                heatGradient: {{0.2: '#f5f0e8', 0.4: '#d4c5a9', 0.6: '#a8b98c', 0.8: '#7a9e5a', 1.0: '#4a6741'}},
+                heatRadius: 18, heatBlur: 14,
+                dotColor: '#3d6b4f', dotStroke: '#2d4f3a', dotOpacity: 0.7, dotRadius: 3,
+                dark: false, showHeat: true, showDots: false,
+                bodyBg: '#faf6ef'
+            }}
+        }};
+
+        var currentTileLayer = null;
+        var currentHeatLayer = null;
+        var currentMarkerLayer = null;
+        var currentView = localStorage.getItem('heatmapView') || 'default';
+
+        function applyView(viewName, mapObj) {{
+            var cfg = viewConfigs[viewName];
+            if (!cfg || !mapObj) return;
+            currentView = viewName;
+            localStorage.setItem('heatmapView', viewName);
+
+            // Update accent colors for current view
+            var cfg = viewConfigs[currentView];
+            var h3 = document.querySelector('#top5-panel h3');
+            if (h3) h3.style.borderBottomColor = cfg.dotColor;
+            document.querySelectorAll('.top5-rank').forEach(function(el) {{ el.style.color = cfg.dotColor; }});
+
+            // Update button states
+            document.querySelectorAll('.view-btn').forEach(function(b) {{
+                b.classList.toggle('active', b.dataset.view === viewName);
+            }});
+
+            // Dark mode body class
+            document.body.classList.remove('dark-view', 'default-view');
+            if (cfg.dark) {{
+                document.body.classList.add('dark-view');
+            }} else if (viewName === 'default') {{
+                document.body.classList.add('default-view');
+            }}
+
+            // Swap tiles
+            if (currentTileLayer) mapObj.removeLayer(currentTileLayer);
+            currentTileLayer = L.tileLayer(cfg.tiles, {{
+                attribution: cfg.attribution,
+                maxZoom: 19, subdomains: 'abcd',
+                keepBuffer: 8,
+                updateWhenZooming: false,
+                updateWhenIdle: true
+            }}).addTo(mapObj);
+
+            // Remove old heat layer
+            if (currentHeatLayer) mapObj.removeLayer(currentHeatLayer);
+            currentHeatLayer = null;
+
+            // Remove old markers
+            if (currentMarkerLayer) mapObj.removeLayer(currentMarkerLayer);
+            currentMarkerLayer = L.layerGroup().addTo(mapObj);
+
+            // Add heatmap
+            if (cfg.showHeat && cfg.heatGradient) {{
+                var heatPoints = [];
+                for (var i = 0; i < allRestaurants.length; i++) {{
+                    var r = allRestaurants[i];
+                    for (var j = 0; j < r.count; j++) {{
+                        heatPoints.push([r.lat, r.lon]);
+                    }}
+                }}
+                currentHeatLayer = L.heatLayer(heatPoints, {{
+                    radius: cfg.heatRadius,
+                    blur: cfg.heatBlur,
+                    maxZoom: 13,
+                    gradient: cfg.heatGradient
+                }}).addTo(mapObj);
+            }}
+
+            // Add markers
+            if (cfg.showDots) {{
+                // Dot density: one dot per visit
+                for (var i = 0; i < dotData.length; i++) {{
+                    L.circleMarker(dotData[i], {{
+                        radius: cfg.dotRadius,
+                        color: cfg.dotStroke,
+                        weight: 0.5,
+                        fill: true,
+                        fillColor: cfg.dotColor,
+                        fillOpacity: cfg.dotOpacity
+                    }}).addTo(currentMarkerLayer);
+                }}
+            }} else {{
+                // Find max visit count for scaling
+                var maxCount = 1;
+                for (var i = 0; i < allRestaurants.length; i++) {{
+                    if (allRestaurants[i].count > maxCount) maxCount = allRestaurants[i].count;
+                }}
+
+                // Restaurant markers scaled by visit density
+                for (var i = 0; i < allRestaurants.length; i++) {{
+                    var r = allRestaurants[i];
+                    var ratio = r.count / maxCount;
+
+                    // Scale radius: 3px (1 visit) → 12px (max visits)
+                    var scaledRadius = 3 + ratio * 9;
+
+                    // Scale opacity: 0.35 (1 visit) → 0.85 (max visits)
+                    var scaledOpacity = 0.35 + ratio * 0.5;
+
+                    var popup = '<b>' + r.name + '</b><br>' + r.city + '<br>Visits: ' + r.count + '<br>Spent: $' + r.total.toFixed(2);
+                    L.circleMarker([r.lat, r.lon], {{
+                        radius: scaledRadius,
+                        color: cfg.dotStroke,
+                        weight: 0.5,
+                        fill: true,
+                        fillColor: cfg.dotColor,
+                        fillOpacity: scaledOpacity
+                    }}).bindPopup(popup).bindTooltip(r.name).addTo(currentMarkerLayer);
+                }}
+            }}
+        }}
 
         function updateTop5(mapObj) {{
             var bounds = mapObj.getBounds();
@@ -712,7 +1033,7 @@ def get_top5_js(restaurant_data):
             }} else {{
                 for (var i = 0; i < top5.length; i++) {{
                     var r = top5[i];
-                    html += '<div class="top5-item">'
+                    html += '<div class="top5-item" data-lat="' + r.lat + '" data-lon="' + r.lon + '" data-name="' + r.name + '" data-city="' + r.city + '" data-count="' + r.count + '" data-total="' + r.total.toFixed(0) + '">'
                         + '<span class="top5-rank">' + (i+1) + '.</span>'
                         + '<span class="top5-name" title="' + r.name + ' — ' + r.city + '">' + r.name + '</span>'
                         + '<span class="top5-stats"><span class="top5-count">' + r.count + 'x</span> · $' + r.total.toFixed(0) + '</span>'
@@ -773,18 +1094,66 @@ def get_top5_js(restaurant_data):
             }}
             if (!mapObj) return;
 
-            // Fly to location
-            mapObj.flyTo([lat, lon], 16);
+            // Pan to location, only zoom in if currently too far out
+            var curZoom = mapObj.getZoom();
+            var targetZoom = Math.max(curZoom, 14);
+            mapObj.setView([lat, lon], targetZoom, {{ animate: true, duration: 0.5 }});
 
-            // Add/move highlight marker
+            // Subtle highlight
             if (searchMarker) mapObj.removeLayer(searchMarker);
+            var cfg = viewConfigs[currentView];
             searchMarker = L.circleMarker([lat, lon], {{
-                radius: 18, color: '#e74c3c', weight: 3, fillColor: '#e74c3c', fillOpacity: 0.2
+                radius: 6, color: cfg.dotStroke, weight: 1, fillColor: cfg.dotColor, fillOpacity: 0.25
             }}).addTo(mapObj);
             searchMarker.bindPopup('<b>' + name + '</b>').openPopup();
 
             searchResults.style.display = 'none';
             searchInput.value = name;
+        }});
+
+        // Top 5 click-to-navigate
+
+        document.getElementById('top5-list').addEventListener('click', function(e) {{
+            var item = e.target.closest('.top5-item');
+            if (!item) return;
+            var lat = parseFloat(item.dataset.lat);
+            var lon = parseFloat(item.dataset.lon);
+            var name = item.dataset.name;
+            if (isNaN(lat) || isNaN(lon)) return;
+
+            var mapObj = null;
+            for (var key in window) {{
+                if (key.startsWith('map_') && window[key] && typeof window[key].getBounds === 'function') {{
+                    mapObj = window[key]; break;
+                }}
+            }}
+            if (!mapObj) return;
+
+            // Pan to location, only zoom in if currently too far out
+            var curZoom = mapObj.getZoom();
+            var targetZoom = Math.max(curZoom, 14);
+            mapObj.setView([lat, lon], targetZoom, {{ animate: true, duration: 0.5 }});
+
+            if (searchMarker) mapObj.removeLayer(searchMarker);
+            var cfg = viewConfigs[currentView];
+            searchMarker = L.circleMarker([lat, lon], {{
+                radius: 6, color: cfg.dotStroke, weight: 1, fillColor: cfg.dotColor, fillOpacity: 0.25
+            }}).addTo(mapObj);
+            searchMarker.bindPopup('<b>' + name + '</b> · ' + item.dataset.count + 'x · $' + item.dataset.total).openPopup();
+        }});
+
+        // View switcher click
+        document.getElementById('view-switcher').addEventListener('click', function(e) {{
+            var btn = e.target.closest('.view-btn');
+            if (!btn) return;
+            var viewName = btn.dataset.view;
+            var mapObj = null;
+            for (var key in window) {{
+                if (key.startsWith('map_') && window[key] && typeof window[key].getBounds === 'function') {{
+                    mapObj = window[key]; break;
+                }}
+            }}
+            if (mapObj) applyView(viewName, mapObj);
         }});
 
         // Close search results on outside click
@@ -805,6 +1174,31 @@ def get_top5_js(restaurant_data):
             }}
             if (mapObj) {{
                 clearInterval(checkMap);
+
+                // Use Leaflet's native scroll zoom with tuned speed
+                // Native handles zoom-toward-cursor correctly without shifting
+                mapObj.options.zoomSnap = 1;
+                mapObj.options.wheelPxPerZoomLevel = 45;
+                mapObj.options.wheelDebounceTime = 30;
+                mapObj.options.zoomAnimation = true;
+                mapObj.options.zoomAnimationThreshold = 4;
+
+                // Smooth panning
+                mapObj.options.inertia = true;
+                mapObj.options.inertiaDeceleration = 3400;
+                mapObj.options.inertiaMaxSpeed = 3000;
+                mapObj.options.easeLinearity = 0.2;
+
+                // Remove Folium's default tile layer, heatmap, and markers
+                mapObj.eachLayer(function(layer) {{
+                    if (layer._url || layer._heat || layer.options.radius !== undefined) {{
+                        mapObj.removeLayer(layer);
+                    }}
+                }});
+
+                // Apply saved or default view
+                applyView(currentView, mapObj);
+
                 mapObj.on('moveend', function() {{ updateTop5(mapObj); }});
                 mapObj.on('zoomend', function() {{ updateTop5(mapObj); }});
                 updateTop5(mapObj);
@@ -832,18 +1226,31 @@ for r in geocoded:
 
 HeatMap(heat_data, radius=15, blur=10, max_zoom=13, name='Heatmap').add_to(m)
 
-# Marker cluster layer
-marker_cluster = MarkerCluster(name='Restaurants').add_to(m)
+# Small dot markers — fixed pixel size, clean and minimal like Zillow
 for r in geocoded:
     popup_text = f"<b>{r['name']}</b><br>{r['city']}<br>Visits: {r['count']}<br>Spent: ${r['total']:.2f}"
-    folium.Marker(
+    folium.CircleMarker(
         location=[r['lat'], r['lon']],
+        radius=3,
+        color='#c0392b',
+        weight=0.5,
+        fill=True,
+        fill_color='#e74c3c',
+        fill_opacity=0.6,
         popup=folium.Popup(popup_text, max_width=250),
         tooltip=r['name'],
-        icon=folium.Icon(color='red', icon='cutlery', prefix='fa')
-    ).add_to(marker_cluster)
+    ).add_to(m)
 
-folium.LayerControl().add_to(m)
+folium.LayerControl(collapsed=False).add_to(m)
+# Hide base layer radio buttons, show only overlay checkboxes
+m.get_root().html.add_child(folium.Element(
+    '<style>'
+    '.leaflet-control-layers-base { display: none !important; }'
+    '.leaflet-control-layers { border: none !important; border-radius: 8px !important; padding: 8px 14px !important; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important; font-size: 13px !important; }'
+    'body.dark-view .leaflet-control-layers { background: rgba(30,30,30,0.92) !important; color: #ddd !important; box-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; }'
+    'body.default-view .leaflet-control-layers { background: rgba(250,246,239,0.95) !important; color: #4a3728 !important; box-shadow: 0 2px 12px rgba(107,82,51,0.15) !important; }'
+    '</style>'
+))
 
 # Add top-5 panel
 top5_html = get_top5_js(make_js_data(geocoded))
@@ -863,17 +1270,30 @@ for r in seattle_data:
 
 HeatMap(heat_seattle, radius=18, blur=12, max_zoom=16, name='Heatmap').add_to(m2)
 
-marker_cluster2 = MarkerCluster(name='Restaurants').add_to(m2)
 for r in seattle_data:
     popup_text = f"<b>{r['name']}</b><br>{r['city']}<br>Visits: {r['count']}<br>Spent: ${r['total']:.2f}"
-    folium.Marker(
+    folium.CircleMarker(
         location=[r['lat'], r['lon']],
+        radius=4,
+        color='#c0392b',
+        weight=0.5,
+        fill=True,
+        fill_color='#e74c3c',
+        fill_opacity=0.6,
         popup=folium.Popup(popup_text, max_width=250),
         tooltip=r['name'],
-        icon=folium.Icon(color='red', icon='cutlery', prefix='fa')
-    ).add_to(marker_cluster2)
+    ).add_to(m2)
 
-folium.LayerControl().add_to(m2)
+folium.LayerControl(collapsed=False).add_to(m2)
+# Hide base layer radio buttons, show only overlay checkboxes
+m2.get_root().html.add_child(folium.Element(
+    '<style>'
+    '.leaflet-control-layers-base { display: none !important; }'
+    '.leaflet-control-layers { border: none !important; border-radius: 8px !important; padding: 8px 14px !important; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important; font-size: 13px !important; }'
+    'body.dark-view .leaflet-control-layers { background: rgba(30,30,30,0.92) !important; color: #ddd !important; box-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; }'
+    'body.default-view .leaflet-control-layers { background: rgba(250,246,239,0.95) !important; color: #4a3728 !important; box-shadow: 0 2px 12px rgba(107,82,51,0.15) !important; }'
+    '</style>'
+))
 
 # Add top-5 panel
 top5_html2 = get_top5_js(make_js_data(geocoded))
