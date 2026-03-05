@@ -406,17 +406,7 @@ with open('transactions.csv', 'r', encoding='utf-8') as f:
         if amount <= 0:
             continue
         is_eatout = category == 'Eat out'
-        known_keywords = [
-            'jollibee', 'chick-fil-a', 'red robin', 'whataburger', 'wendy',
-            'mcdonald', 'taco bell', 'dairy queen', 'domino', 'subway',
-            'panda express', 'five guys', 'raising cane', 'chipotle',
-            'shake shack', 'in-n-out', 'jack in the b', 'sonic',
-            'auntie anne', 'starbucks', 'tim horton',
-            'taco palenque', 'texas roadhou',
-            'einstein bros', 'einsteinbros',
-        ]
-        is_known = any(kw in name.lower() for kw in known_keywords)
-        if not is_eatout and not is_known:
+        if not is_eatout:
             continue
         restaurants.append({
             'date': row['date'],
@@ -741,8 +731,8 @@ def get_top5_js(restaurant_data):
         }}
         #search-panel {{
             position: fixed;
-            top: 15px;
-            right: 60px;
+            top: 60px;
+            right: 15px;
             z-index: 9999;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }}
@@ -1251,7 +1241,16 @@ for r in geocoded:
         tooltip=r['name'],
     ).add_to(m)
 
-folium.LayerControl().add_to(m)
+folium.LayerControl(collapsed=False).add_to(m)
+# Hide base layer radio buttons, show only overlay checkboxes
+m.get_root().html.add_child(folium.Element(
+    '<style>'
+    '.leaflet-control-layers-base { display: none !important; }'
+    '.leaflet-control-layers { border: none !important; border-radius: 8px !important; padding: 8px 14px !important; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important; font-size: 13px !important; }'
+    'body.dark-view .leaflet-control-layers { background: rgba(30,30,30,0.92) !important; color: #ddd !important; box-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; }'
+    'body.default-view .leaflet-control-layers { background: rgba(250,246,239,0.95) !important; color: #4a3728 !important; box-shadow: 0 2px 12px rgba(107,82,51,0.15) !important; }'
+    '</style>'
+))
 
 # Add top-5 panel
 top5_html = get_top5_js(make_js_data(geocoded))
@@ -1285,7 +1284,16 @@ for r in seattle_data:
         tooltip=r['name'],
     ).add_to(m2)
 
-folium.LayerControl().add_to(m2)
+folium.LayerControl(collapsed=False).add_to(m2)
+# Hide base layer radio buttons, show only overlay checkboxes
+m2.get_root().html.add_child(folium.Element(
+    '<style>'
+    '.leaflet-control-layers-base { display: none !important; }'
+    '.leaflet-control-layers { border: none !important; border-radius: 8px !important; padding: 8px 14px !important; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important; font-size: 13px !important; }'
+    'body.dark-view .leaflet-control-layers { background: rgba(30,30,30,0.92) !important; color: #ddd !important; box-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; }'
+    'body.default-view .leaflet-control-layers { background: rgba(250,246,239,0.95) !important; color: #4a3728 !important; box-shadow: 0 2px 12px rgba(107,82,51,0.15) !important; }'
+    '</style>'
+))
 
 # Add top-5 panel
 top5_html2 = get_top5_js(make_js_data(geocoded))
