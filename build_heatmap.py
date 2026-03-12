@@ -766,10 +766,7 @@ def get_top5_js(restaurant_data):
     js_dot_data = json.dumps(dot_data)
     return f"""
     <!-- Home overlay toggle -->
-    <div id="home-toggle" style="position:fixed;top:15px;right:15px;z-index:9999;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.92);border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,0.15);padding:6px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;cursor:pointer;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);">
-        <input type="checkbox" id="home-checkbox" style="cursor:pointer;accent-color:#6b5233;" />
-        <label for="home-checkbox" style="cursor:pointer;color:#555;font-weight:500;">🏠 Home Base</label>
-    </div>
+
     <style>
         /* Prevent tile blanking during zoom */
         .leaflet-tile-container {{
@@ -849,7 +846,7 @@ def get_top5_js(restaurant_data):
         }}
         #search-panel {{
             position: fixed;
-            top: 60px;
+            top: 55px;
             right: 15px;
             z-index: 9999;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -903,24 +900,30 @@ def get_top5_js(restaurant_data):
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
         }}
-        .view-btn {{
-            padding: 8px 16px;
+        .toggle-btn {{
+            padding: 8px 14px;
             cursor: pointer;
             border: none;
             background: transparent;
-            color: #555;
+            color: #999;
             font-size: 12px;
             font-weight: 500;
             transition: all 0.2s;
             border-right: 1px solid rgba(0,0,0,0.08);
             white-space: nowrap;
         }}
-        .view-btn:last-child {{ border-right: none; }}
-        .view-btn:hover {{ background: rgba(0,0,0,0.05); }}
-        .view-btn.active {{
-            background: #333;
-            color: #fff;
+        .toggle-btn:last-child {{ border-right: none; }}
+        .toggle-btn:hover {{ background: rgba(0,0,0,0.05); }}
+        .toggle-btn.active {{
+            color: #333;
             font-weight: 600;
+            background: rgba(0,0,0,0.06);
+        }}
+        .switcher-divider {{
+            width: 1px;
+            background: rgba(0,0,0,0.12);
+            align-self: stretch;
+            margin: 4px 0;
         }}
         /* Dark mode overrides for panels */
         body.dark-view #top5-panel {{
@@ -949,14 +952,9 @@ def get_top5_js(restaurant_data):
         body.dark-view #view-switcher {{
             background: rgba(30,30,30,0.92);
         }}
-        body.dark-view .view-btn {{ color: #aaa; border-right-color: rgba(255,255,255,0.08); }}
-        body.dark-view .view-btn:hover {{ background: rgba(255,255,255,0.08); }}
-        body.dark-view .view-btn.active {{ background: #e74c3c; color: #fff; }}
-        body.dark-view #home-toggle {{
-            background: rgba(30,30,30,0.92);
-            box-shadow: 0 2px 12px rgba(0,0,0,0.5);
-        }}
-        body.dark-view #home-toggle label {{ color: #aaa; }}
+        body.dark-view .toggle-btn {{ color: #666; border-right-color: rgba(255,255,255,0.08); }}
+        body.dark-view .toggle-btn:hover {{ background: rgba(255,255,255,0.08); }}
+        body.dark-view .toggle-btn.active {{ color: #eee; background: rgba(255,255,255,0.1); }}
 
         /* Default (fine dining) mode */
         body.default-view #top5-panel {{
@@ -993,23 +991,66 @@ def get_top5_js(restaurant_data):
             background: rgba(250,246,239,0.95);
             border: 1px solid #d4c5a9;
         }}
-        body.default-view .view-btn {{ color: #6b5233; border-right-color: #d4c5a9; }}
-        body.default-view .view-btn:hover {{ background: rgba(168,185,140,0.15); }}
-        body.default-view .view-btn.active {{ background: #6b5233; color: #faf6ef; }}
-        body.default-view #home-toggle {{
-            background: rgba(250,246,239,0.95);
-            border: 1px solid #d4c5a9;
-            box-shadow: 0 2px 12px rgba(107,82,51,0.15);
+        body.default-view .toggle-btn {{ color: #a89880; border-right-color: #d4c5a9; }}
+        body.default-view .toggle-btn:hover {{ background: rgba(168,185,140,0.15); }}
+        body.default-view .toggle-btn.active {{ color: #5a4632; background: rgba(168,185,140,0.18); }}
+
+        /* Mobile responsive */
+        @media (max-width: 600px) {{
+            #view-switcher {{
+                top: 8px;
+                font-size: 11px;
+                border-radius: 6px;
+                max-width: 95vw;
+            }}
+            .toggle-btn {{
+                padding: 6px 10px;
+                font-size: 11px;
+            }}
+            #search-panel {{
+                top: 48px;
+                right: 8px;
+                left: 50px;
+            }}
+            #search-input {{
+                width: 100% !important;
+                box-sizing: border-box;
+                font-size: 14px;
+                padding: 8px 10px 8px 32px !important;
+            }}
+            #top5-panel {{
+                bottom: 8px;
+                left: 8px;
+                right: 8px;
+                max-width: none;
+                font-size: 12px;
+                padding: 10px 12px;
+                border-radius: 8px;
+            }}
+            #top5-panel h3 {{
+                font-size: 13px;
+                margin-bottom: 6px;
+            }}
+            .top5-name {{
+                font-size: 12px;
+            }}
+            .top5-stats {{
+                font-size: 11px;
+            }}
+            .leaflet-control-layers {{
+                display: none !important;
+            }}
         }}
-        body.default-view #home-toggle label {{ color: #6b5233; }}
     </style>
     <div id="search-panel">
         <input type="text" id="search-input" placeholder="Search restaurants..." autocomplete="off" />
         <div id="search-results"></div>
     </div>
     <div id="view-switcher">
-        <button class="view-btn active" data-view="default">Default</button>
-        <button class="view-btn" data-view="dark">Dark Neon</button>
+        <button class="toggle-btn active" id="heatmap-btn">🔥 Heatmap</button>
+        <button class="toggle-btn" id="home-btn">🏠 Home</button>
+        <span class="switcher-divider"></span>
+        <button class="toggle-btn" id="dark-btn">🌙 Dark</button>
     </div>
     <div id="top5-panel">
         <h3>🍽 Top 5 in View</h3>
@@ -1049,32 +1090,41 @@ def get_top5_js(restaurant_data):
         var currentView = localStorage.getItem('heatmapView') || 'default';
         var theMap = null;
 
+        function makeRingPoints(lat, lon, radiusM, n) {{
+            var pts = [];
+            var d = radiusM / 6371000;
+            var lat1 = lat * Math.PI / 180;
+            var lon1 = lon * Math.PI / 180;
+            for (var i = 0; i <= n; i++) {{
+                var a = 2 * Math.PI * i / n;
+                var lat2 = Math.asin(Math.sin(lat1)*Math.cos(d) + Math.cos(lat1)*Math.sin(d)*Math.cos(a));
+                var lon2 = lon1 + Math.atan2(Math.sin(a)*Math.sin(d)*Math.cos(lat1), Math.cos(d)-Math.sin(lat1)*Math.sin(lat2));
+                pts.push([lat2*180/Math.PI, lon2*180/Math.PI]);
+            }}
+            return pts;
+        }}
+
         function toggleHomeOverlay(show) {{
             if (!theMap) return;
             if (show) {{
                 if (homeLayerGroup) theMap.removeLayer(homeLayerGroup);
-                homeLayerGroup = L.layerGroup().addTo(theMap);
+                homeLayerGroup = L.layerGroup();
                 var cfg = viewConfigs[currentView];
-                var ringColor = cfg.dark ? 'rgba(0,255,255,0.25)' : 'rgba(107,82,51,0.18)';
-                var ringBorder = cfg.dark ? 'rgba(0,255,255,0.4)' : 'rgba(107,82,51,0.35)';
+                var ringBorder = cfg.dark ? 'rgba(0,255,255,0.7)' : 'rgba(107,82,51,0.6)';
                 var labelColor = cfg.dark ? '#0ff' : '#6b5233';
-                var rings = [0.5, 1, 3, 5, 10];
+                var labelBg = cfg.dark ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.85)';
+                var rings = [0.1, 0.5, 1, 3, 5, 10];
                 for (var i = 0; i < rings.length; i++) {{
                     var radiusMeters = rings[i] * 1609.34;
-                    L.circle([homeLat, homeLon], {{
-                        radius: radiusMeters,
-                        color: ringBorder,
-                        weight: 1,
-                        fill: i === 0,
-                        fillColor: ringColor,
-                        fillOpacity: 0.08,
-                        dashArray: '4 6'
+                    L.polyline(makeRingPoints(homeLat, homeLon, radiusMeters, 36), {{
+                        color: ringBorder, weight: 2, dashArray: '6 4', fill: false, interactive: false
                     }}).addTo(homeLayerGroup);
                     var labelLat = homeLat + (radiusMeters / 111320);
                     L.marker([labelLat, homeLon], {{
+                        interactive: false,
                         icon: L.divIcon({{
-                            className: 'distance-label',
-                            html: '<span style="font-size:10px;font-weight:600;color:' + labelColor + ';background:rgba(255,255,255,0.85);padding:1px 5px;border-radius:4px;white-space:nowrap;">' + rings[i] + ' mi</span>',
+                            className: '',
+                            html: '<span style="font-size:10px;font-weight:600;color:' + labelColor + ';background:' + labelBg + ';padding:1px 5px;border-radius:4px;white-space:nowrap;">' + rings[i] + ' mi</span>',
                             iconSize: [40, 14],
                             iconAnchor: [20, 7]
                         }})
@@ -1082,12 +1132,13 @@ def get_top5_js(restaurant_data):
                 }}
                 L.marker([homeLat, homeLon], {{
                     icon: L.divIcon({{
-                        className: 'home-icon',
+                        className: '',
                         html: '<div style="font-size:22px;text-shadow:0 1px 4px rgba(0,0,0,0.3);line-height:1;">&#127968;</div>',
                         iconSize: [28, 28],
                         iconAnchor: [14, 14]
                     }})
                 }}).bindPopup('<b>Home Base</b><br>IRO Apartments<br>5233 15th Ave NE<br>Seattle, WA 98105').addTo(homeLayerGroup);
+                homeLayerGroup.addTo(theMap);
             }} else {{
                 if (homeLayerGroup) {{
                     theMap.removeLayer(homeLayerGroup);
@@ -1096,8 +1147,33 @@ def get_top5_js(restaurant_data):
             }}
         }}
 
-        document.getElementById('home-checkbox').addEventListener('change', function() {{
-            toggleHomeOverlay(this.checked);
+        var homeActive = false;
+        var heatmapActive = true;
+        var darkActive = false;
+
+        document.getElementById('dark-btn').addEventListener('click', function() {{
+            darkActive = !darkActive;
+            this.classList.toggle('active', darkActive);
+            var viewName = darkActive ? 'dark' : 'default';
+            if (theMap) applyView(viewName, theMap);
+        }});
+
+        document.getElementById('home-btn').addEventListener('click', function() {{
+            homeActive = !homeActive;
+            this.classList.toggle('active', homeActive);
+            toggleHomeOverlay(homeActive);
+        }});
+
+        document.getElementById('heatmap-btn').addEventListener('click', function() {{
+            heatmapActive = !heatmapActive;
+            this.classList.toggle('active', heatmapActive);
+            if (currentHeatLayer) {{
+                if (heatmapActive) {{
+                    currentHeatLayer.addTo(theMap);
+                }} else {{
+                    theMap.removeLayer(currentHeatLayer);
+                }}
+            }}
         }});
 
         function applyView(viewName, mapObj) {{
@@ -1111,11 +1187,6 @@ def get_top5_js(restaurant_data):
             var h3 = document.querySelector('#top5-panel h3');
             if (h3) h3.style.borderBottomColor = cfg.dotColor;
             document.querySelectorAll('.top5-rank').forEach(function(el) {{ el.style.color = cfg.dotColor; }});
-
-            // Update button states
-            document.querySelectorAll('.view-btn').forEach(function(b) {{
-                b.classList.toggle('active', b.dataset.view === viewName);
-            }});
 
             // Dark mode body class
             document.body.classList.remove('dark-view', 'default-view');
@@ -1205,9 +1276,13 @@ def get_top5_js(restaurant_data):
             }}
 
             // Re-render home overlay if active (so ring colors match new theme)
-            var cb = document.getElementById('home-checkbox');
-            if (cb && cb.checked) {{
+            if (homeActive) {{
                 setTimeout(function() {{ toggleHomeOverlay(true); }}, 50);
+            }}
+
+            // Re-apply heatmap visibility
+            if (!heatmapActive && currentHeatLayer) {{
+                theMap.removeLayer(currentHeatLayer);
             }}
         }}
 
@@ -1333,20 +1408,6 @@ def get_top5_js(restaurant_data):
             searchMarker.bindPopup('<b>' + name + '</b> · ' + item.dataset.count + 'x · $' + item.dataset.total).openPopup();
         }});
 
-        // View switcher click
-        document.getElementById('view-switcher').addEventListener('click', function(e) {{
-            var btn = e.target.closest('.view-btn');
-            if (!btn) return;
-            var viewName = btn.dataset.view;
-            var mapObj = null;
-            for (var key in window) {{
-                if (key.startsWith('map_') && window[key] && typeof window[key].getBounds === 'function') {{
-                    mapObj = window[key]; break;
-                }}
-            }}
-            if (mapObj) applyView(viewName, mapObj);
-        }});
-
         // Close search results on outside click
         document.addEventListener('click', function(e) {{
             if (!e.target.closest('#search-panel')) {{
@@ -1411,6 +1472,9 @@ center_lat = sum(r['lat'] for r in geocoded) / len(geocoded)
 center_lon = sum(r['lon'] for r in geocoded) / len(geocoded)
 
 m = folium.Map(location=[center_lat, center_lon], zoom_start=4, tiles='CartoDB positron')
+m.get_root().header.add_child(folium.Element(
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">'
+))
 
 # Heatmap layer (weighted by visit count)
 heat_data = []
@@ -1436,13 +1500,10 @@ for r in geocoded:
     ).add_to(m)
 
 folium.LayerControl(collapsed=False).add_to(m)
-# Hide base layer radio buttons, show only overlay checkboxes
+# Hide layer control entirely — we have our own toggles
 m.get_root().html.add_child(folium.Element(
     '<style>'
-    '.leaflet-control-layers-base { display: none !important; }'
-    '.leaflet-control-layers { border: none !important; border-radius: 8px !important; padding: 8px 14px !important; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important; font-size: 13px !important; }'
-    'body.dark-view .leaflet-control-layers { background: rgba(30,30,30,0.92) !important; color: #ddd !important; box-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; }'
-    'body.default-view .leaflet-control-layers { background: rgba(250,246,239,0.95) !important; color: #4a3728 !important; box-shadow: 0 2px 12px rgba(107,82,51,0.15) !important; }'
+    '.leaflet-control-layers { display: none !important; }'
     '</style>'
 ))
 
@@ -1455,6 +1516,9 @@ print(f"\nSaved global heatmap: restaurant_heatmap.html")
 
 # ---- MAP 2: Seattle area detail ----
 m2 = folium.Map(location=[47.6200, -122.3210], zoom_start=13, tiles='CartoDB positron')
+m2.get_root().header.add_child(folium.Element(
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">'
+))
 
 seattle_data = [r for r in geocoded if 46.5 < r['lat'] < 48.5 and -123.5 < r['lon'] < -121.5]
 heat_seattle = []
@@ -1479,13 +1543,10 @@ for r in seattle_data:
     ).add_to(m2)
 
 folium.LayerControl(collapsed=False).add_to(m2)
-# Hide base layer radio buttons, show only overlay checkboxes
+# Hide layer control entirely — we have our own toggles
 m2.get_root().html.add_child(folium.Element(
     '<style>'
-    '.leaflet-control-layers-base { display: none !important; }'
-    '.leaflet-control-layers { border: none !important; border-radius: 8px !important; padding: 8px 14px !important; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important; font-size: 13px !important; }'
-    'body.dark-view .leaflet-control-layers { background: rgba(30,30,30,0.92) !important; color: #ddd !important; box-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; }'
-    'body.default-view .leaflet-control-layers { background: rgba(250,246,239,0.95) !important; color: #4a3728 !important; box-shadow: 0 2px 12px rgba(107,82,51,0.15) !important; }'
+    '.leaflet-control-layers { display: none !important; }'
     '</style>'
 ))
 
