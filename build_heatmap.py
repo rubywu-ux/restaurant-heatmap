@@ -4,9 +4,21 @@ Reads transactions.csv + Uber Eats data, geocodes restaurants, builds Folium hea
 """
 import csv
 import re
+import math
 from datetime import datetime
 import folium
 from folium.plugins import HeatMap
+
+# Home base: IRO Apartments, 5233 15th Ave NE, Seattle, WA 98105
+HOME_LAT = 47.6680
+HOME_LON = -122.3115
+
+def haversine_miles(lat1, lon1, lat2, lon2):
+    R = 3958.8  # Earth radius in miles
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
 
 ###############################################################################
 # KNOWN RESTAURANT COORDINATES
@@ -717,6 +729,7 @@ unmatched = []
 for key, info in unique.items():
     coords = get_coords(info['name'], info['city'])
     if coords:
+        dist = haversine_miles(HOME_LAT, HOME_LON, coords[0], coords[1])
         geocoded.append({
             'name': info['name'],
             'city': info['city'],
@@ -724,6 +737,7 @@ for key, info in unique.items():
             'lon': coords[1],
             'count': info['count'],
             'total': info['total'],
+            'distance': round(dist, 1),
         })
     else:
         unmatched.append(info)
@@ -751,6 +765,11 @@ def get_top5_js(restaurant_data):
             dot_data.append([r['lat'], r['lon']])
     js_dot_data = json.dumps(dot_data)
     return f"""
+    <!-- Home overlay toggle -->
+    <div id="home-toggle" style="position:fixed;top:15px;right:15px;z-index:9999;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.92);border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,0.15);padding:6px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;cursor:pointer;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);">
+        <input type="checkbox" id="home-checkbox" style="cursor:pointer;accent-color:#6b5233;" />
+        <label for="home-checkbox" style="cursor:pointer;color:#555;font-weight:500;">🏠 Home Base</label>
+    </div>
     <style>
         /* Prevent tile blanking during zoom */
         .leaflet-tile-container {{
@@ -933,6 +952,11 @@ def get_top5_js(restaurant_data):
         body.dark-view .view-btn {{ color: #aaa; border-right-color: rgba(255,255,255,0.08); }}
         body.dark-view .view-btn:hover {{ background: rgba(255,255,255,0.08); }}
         body.dark-view .view-btn.active {{ background: #e74c3c; color: #fff; }}
+        body.dark-view #home-toggle {{
+            background: rgba(30,30,30,0.92);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+        }}
+        body.dark-view #home-toggle label {{ color: #aaa; }}
 
         /* Default (fine dining) mode */
         body.default-view #top5-panel {{
@@ -972,6 +996,12 @@ def get_top5_js(restaurant_data):
         body.default-view .view-btn {{ color: #6b5233; border-right-color: #d4c5a9; }}
         body.default-view .view-btn:hover {{ background: rgba(168,185,140,0.15); }}
         body.default-view .view-btn.active {{ background: #6b5233; color: #faf6ef; }}
+        body.default-view #home-toggle {{
+            background: rgba(250,246,239,0.95);
+            border: 1px solid #d4c5a9;
+            box-shadow: 0 2px 12px rgba(107,82,51,0.15);
+        }}
+        body.default-view #home-toggle label {{ color: #6b5233; }}
     </style>
     <div id="search-panel">
         <input type="text" id="search-input" placeholder="Search restaurants..." autocomplete="off" />
@@ -988,6 +1018,9 @@ def get_top5_js(restaurant_data):
     <script>
         var allRestaurants = {js_data};
         var dotData = {js_dot_data};
+        var homeLat = {HOME_LAT};
+        var homeLon = {HOME_LON};
+        var homeLayerGroup = null;
 
         // ---- View configurations ----
         var viewConfigs = {{
@@ -1014,6 +1047,58 @@ def get_top5_js(restaurant_data):
         var currentHeatLayer = null;
         var currentMarkerLayer = null;
         var currentView = localStorage.getItem('heatmapView') || 'default';
+        var theMap = null;
+
+        function toggleHomeOverlay(show) {{
+            if (!theMap) return;
+            if (show) {{
+                if (homeLayerGroup) theMap.removeLayer(homeLayerGroup);
+                homeLayerGroup = L.layerGroup().addTo(theMap);
+                var cfg = viewConfigs[currentView];
+                var ringColor = cfg.dark ? 'rgba(0,255,255,0.25)' : 'rgba(107,82,51,0.18)';
+                var ringBorder = cfg.dark ? 'rgba(0,255,255,0.4)' : 'rgba(107,82,51,0.35)';
+                var labelColor = cfg.dark ? '#0ff' : '#6b5233';
+                var rings = [0.5, 1, 3, 5, 10];
+                for (var i = 0; i < rings.length; i++) {{
+                    var radiusMeters = rings[i] * 1609.34;
+                    L.circle([homeLat, homeLon], {{
+                        radius: radiusMeters,
+                        color: ringBorder,
+                        weight: 1,
+                        fill: i === 0,
+                        fillColor: ringColor,
+                        fillOpacity: 0.08,
+                        dashArray: '4 6'
+                    }}).addTo(homeLayerGroup);
+                    var labelLat = homeLat + (radiusMeters / 111320);
+                    L.marker([labelLat, homeLon], {{
+                        icon: L.divIcon({{
+                            className: 'distance-label',
+                            html: '<span style="font-size:10px;font-weight:600;color:' + labelColor + ';background:rgba(255,255,255,0.85);padding:1px 5px;border-radius:4px;white-space:nowrap;">' + rings[i] + ' mi</span>',
+                            iconSize: [40, 14],
+                            iconAnchor: [20, 7]
+                        }})
+                    }}).addTo(homeLayerGroup);
+                }}
+                L.marker([homeLat, homeLon], {{
+                    icon: L.divIcon({{
+                        className: 'home-icon',
+                        html: '<div style="font-size:22px;text-shadow:0 1px 4px rgba(0,0,0,0.3);line-height:1;">&#127968;</div>',
+                        iconSize: [28, 28],
+                        iconAnchor: [14, 14]
+                    }})
+                }}).bindPopup('<b>Home Base</b><br>IRO Apartments<br>5233 15th Ave NE<br>Seattle, WA 98105').addTo(homeLayerGroup);
+            }} else {{
+                if (homeLayerGroup) {{
+                    theMap.removeLayer(homeLayerGroup);
+                    homeLayerGroup = null;
+                }}
+            }}
+        }}
+
+        document.getElementById('home-checkbox').addEventListener('change', function() {{
+            toggleHomeOverlay(this.checked);
+        }});
 
         function applyView(viewName, mapObj) {{
             var cfg = viewConfigs[viewName];
@@ -1106,7 +1191,8 @@ def get_top5_js(restaurant_data):
                     // Scale opacity: 0.35 (1 visit) → 0.85 (max visits)
                     var scaledOpacity = 0.35 + ratio * 0.5;
 
-                    var popup = '<b>' + r.name + '</b><br>' + r.city + '<br>Visits: ' + r.count + '<br>Spent: $' + r.total.toFixed(2);
+                    var distText = r.distance > 0 ? '<br>Distance: ' + r.distance.toFixed(1) + ' mi from home' : '';
+                    var popup = '<b>' + r.name + '</b><br>' + r.city + '<br>Visits: ' + r.count + '<br>Spent: $' + r.total.toFixed(2) + distText;
                     L.circleMarker([r.lat, r.lon], {{
                         radius: scaledRadius,
                         color: cfg.dotStroke,
@@ -1116,6 +1202,12 @@ def get_top5_js(restaurant_data):
                         fillOpacity: scaledOpacity
                     }}).bindPopup(popup).bindTooltip(r.name).addTo(currentMarkerLayer);
                 }}
+            }}
+
+            // Re-render home overlay if active (so ring colors match new theme)
+            var cb = document.getElementById('home-checkbox');
+            if (cb && cb.checked) {{
+                setTimeout(function() {{ toggleHomeOverlay(true); }}, 50);
             }}
         }}
 
@@ -1135,7 +1227,7 @@ def get_top5_js(restaurant_data):
                     html += '<div class="top5-item" data-lat="' + r.lat + '" data-lon="' + r.lon + '" data-name="' + r.name + '" data-city="' + r.city + '" data-count="' + r.count + '" data-total="' + r.total.toFixed(0) + '">'
                         + '<span class="top5-rank">' + (i+1) + '.</span>'
                         + '<span class="top5-name" title="' + r.name + ' — ' + r.city + '">' + r.name + '</span>'
-                        + '<span class="top5-stats"><span class="top5-count">' + r.count + 'x</span> · $' + r.total.toFixed(0) + '</span>'
+                        + '<span class="top5-stats"><span class="top5-count">' + r.count + 'x</span> · $' + r.total.toFixed(0) + (r.distance > 0 && r.distance < 100 ? ' · ' + r.distance.toFixed(1) + 'mi' : '') + '</span>'
                         + '</div>';
                 }}
             }}
@@ -1301,6 +1393,8 @@ def get_top5_js(restaurant_data):
                 mapObj.on('moveend', function() {{ updateTop5(mapObj); }});
                 mapObj.on('zoomend', function() {{ updateTop5(mapObj); }});
                 updateTop5(mapObj);
+
+                theMap = mapObj;
             }}
         }}, 200);
     </script>
@@ -1309,7 +1403,8 @@ def get_top5_js(restaurant_data):
 # Prepare restaurant data for JS
 def make_js_data(data):
     return [{'name': r['name'], 'city': r['city'], 'lat': r['lat'],
-             'lon': r['lon'], 'count': r['count'], 'total': r['total']} for r in data]
+             'lon': r['lon'], 'count': r['count'], 'total': r['total'],
+             'distance': r.get('distance', 0)} for r in data]
 
 # ---- MAP 1: Global overview with markers ----
 center_lat = sum(r['lat'] for r in geocoded) / len(geocoded)
