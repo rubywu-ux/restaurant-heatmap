@@ -14,218 +14,183 @@ from folium.plugins import HeatMap
 ###############################################################################
 KNOWN_COORDS = {
     # ===== SEATTLE, WA - U-District / University Way =====
-    "aplus hong ko|seattle": (47.6637, -122.3131),  # A+ Hong Kong Kitchen, 4715 University Way NE
-    "aplus hong kong kitchen": (47.6637, -122.3131),
-    "shawarma king|seattle": (47.6621, -122.3131),  # 4515 University Way NE
-    "shawarma king|unknown": (47.6621, -122.3131),
-    "shawarma king|u-district": (47.6621, -122.3131),
-    "hey! i am yog|seattle": (47.6620, -122.3131),  # 4507 University Way NE
-    "hey! i am yogost|u-district": (47.6620, -122.3131),
-    "panda yogurt uw|u-district": (47.6615, -122.3131),  # 4502 University Way NE
-    "panda yogurt|unknown": (47.6615, -122.3131),
-    "chayan|u-district": (47.6625, -122.3131),  # U-District
-    "cha yan|unknown": (47.6625, -122.3131),
-    "uw food services|uw campus": (47.6553, -122.3035),  # UW Campus
-    "uw seattle bean|uw campus": (47.6560, -122.3050),
-    "tst* dont yel|seattle": (47.6618, -122.3131),  # Don't Yell At Me, U-District
-    "snowy village - uw": (47.6612, -122.3131),  # U-District
-    "tst* snowy vi|seattle": (47.6612, -122.3131),
+    "center table|seattle": (47.6599, -122.3045),  # Center Table, 4294 Little Canoe Channel NE (UW Campus)
+    "aplus hong ko|seattle": (47.5983, -122.3243),  # A+ HK Restaurant, 667 S King St (Chinatown)
+    "aplus hong kong kitchen": (47.5983, -122.3243),  # A+ HK Restaurant, 667 S King St
+    "a+ hong kong restaurant|seattle": (47.5983, -122.3243),  # display-name alias
+    "shawarma king|seattle": (47.6679, -122.3131),  # 5241 University Way NE
+    # "shawarma king|seattle" duplicate removed (already exists above)
+    "hey! i am yog|seattle": (47.6569, -122.3142),  # 4106 Brooklyn Ave NE Suite 103A
+    "panda yogurt|seattle": (47.6592, -122.3131),
+    "cha yan|seattle": (47.6575, -122.3152),
+    "chayan|seattle": (47.6575, -122.3152),  # Uber Eats display-name alias
+    "snowy village - uw": (47.6682, -122.3128),  # Snowy Village, 5264 University Way NE
     "yomies rice &|seattle": (47.6610, -122.3131),  # Yomie's, U-District
-    "bubble tea fr|seattle": (47.6610, -122.3135),
-    "tiger sugar s|seattle": (47.6608, -122.3131),
-    "plaza latina|unknown": (47.6630, -122.3131),  # Plaza Latina, University Way
-    "u-district|unknown": (47.6615, -122.3131),
-    "naan stop eat|seattle": (47.6625, -122.3125),  # Naan Stop, U-District
-    "naan stop|unknown": (47.6625, -122.3125),
-    "tst* next lev|seattle": (47.6620, -122.3125),  # Next Level Burger
-    "nextlevelburg|seattle": (47.6620, -122.3125),
-    "poke dondon|unknown": (47.6618, -122.3128),
+    "plaza latina|shoreline": (47.7535, -122.3453),  # Plaza Latina, 17034 Aurora Ave N, Shoreline
+    "u-district|seattle": (47.6615, -122.3131),
+    "naan stop eat|seattle": (47.6626, -122.3135),  # Naan Stop, 4549 University Way NE
+    "naan stop|seattle": (47.6626, -122.3135),
+    "nextlevelburg|seattle": (47.6751, -122.3146),
+    "poke dondon|seattle": (47.6636, -122.3162),  # 4712 11th Ave NE
     "burritos cali|seattle": (47.6632, -122.3131),
+    "persepolis gr|seattle": (47.6691, -122.3133),  # Persepolis Grill, 5517 University Way NE
+    "isarn thai kitchen|seattle": (47.6759, -122.3019),
+    "little thai|seattle": (47.6580, -122.3150),  # Little Thai, 4142 Brooklyn Ave NE
+    "george coffee & pastries|seattle": (47.6629, -122.3136),
+    "muddy waters|seattle": (47.6633, -122.3156),  # Muddy Waters Coffee, 1116 NE 47th St
+    "portage|seattle": (47.6576, -122.3177),
+
+    # Post-override name matches (prefix-stripped names that don't match original keys)
+    "dont yel|seattle": (47.6618, -122.3131),  # prefix-stripped "Tst* Dont Yel"
+    "don't yell at me|seattle": (47.6618, -122.3131),  # display-name alias
+    "cedars i|seattle": (47.6647, -122.3145),  # Cedars in U-District, 4759 Brooklyn Ave NE
+    "cedars of lebanon|seattle": (47.6647, -122.3145),  # display-name alias
+    "next lev|seattle": (47.6751, -122.3146),  # prefix-stripped "Tst* Next Lev"
+    "einstein bros. bagels|seattle": (47.6613, -122.3005),
 
     # ===== SEATTLE, WA - Chinatown/International District =====
-    "panda yogurt chinatown|chinatown": (47.5982, -122.3226),  # 665 S King St
-    "meetfresh chinatown|chinatown": (47.5980, -122.3226),  # 659 S King St
-    "pho bac sup s|seattle": (47.5975, -122.3220),  # Pho Bac Sup Shop
+    "pho bac sup s|seattle": (47.5996, -122.3154),  # Pho Bac Sup Shop, 1240 S Jackson St
     "pho bac dt cd|seattle": (47.5970, -122.3230),  # Pho Bac DT
-    "pho bac dt 00|seattle": (47.5970, -122.3230),
-    "kau kau bbq r|seattle": (47.5985, -122.3232),  # Kau Kau BBQ
     "honey court s|seattle": (47.5978, -122.3228),  # Honey Court Seafood
-    "lam seafood m|seattle": (47.5976, -122.3223),
-    "tai tung|seattle": (47.5982, -122.3230),
-    "tst* fort st|unknown": (47.5980, -122.3235),  # Fort St. George
-    "mee sum|unknown": (47.5980, -122.3225),  # Mee Sum Pastry
-    "tst* mee sum|unknown": (47.5980, -122.3225),
-    "grean|unknown": (47.5983, -122.3229),
-    "letao|unknown": (47.5979, -122.3224),  # LeTao
-    "heytea|unknown": (47.5981, -122.3227),  # HeyTea
-    "heytea-us-wa|unknown": (47.5981, -122.3227),
-    "heytea south|seattle": (47.5981, -122.3227),
+    "fort st|seattle": (47.5982, -122.3262),
+    "mee sum|seattle": (47.6610, -122.3134),  # Mee Sum, 4343 University Way NE (U-District)
+    "grean|seattle": (47.6617, -122.3128),  # Grean Matcha, 4524 University Way NE (U-District)
+    "letao|bellevue": (47.6161, -122.1933),  # LeTao, 700 110th Ave NE #195, Bellevue (The Bravern)
+    "heytea|seattle": (47.6198, -122.3396),  # HeyTea (South Lake Union), 910 John St
 
     # ===== SEATTLE, WA - Capitol Hill / Central District =====
-    "dick's drive|unknown": (47.6155, -122.3210),  # Dick's Drive-In Broadway
-    "boon boona co|seattle": (47.6143, -122.3175),  # Boon Boona Coffee
-    "la carta de o|seattle": (47.6140, -122.3190),
-    "slurp station|seattle": (47.6145, -122.3200),
-    "coco fresh te|seattle": (47.6150, -122.3185),
+    "dick's drive|seattle": (47.6155, -122.3210),  # Dick's Drive-In Broadway
+    "boon boona co|seattle": (47.6076, -122.3166),  # Boon Boona Coffee, 1223 E Cherry St
+    "la carta de o|seattle": (47.6681, -122.3859),  # La Carta de Oaxaca, 5431 Ballard Ave NW
+    "slurp station|seattle": (47.6633, -122.3146),  # Slurp Station, 4701 Brooklyn Ave NE (U-District)
+    "coco fresh te|seattle": (47.6632, -122.3138),  # CoCo Bubble Tea, 4700 Brooklyn Ave NE (U-District)
 
     # ===== SEATTLE, WA - SoDo / Pioneer Square =====
-    "paseo sodo|unknown": (47.5810, -122.3340),  # Paseo SoDo
-    "paseo sodo|seattle": (47.5810, -122.3340),
+    "paseo sodo|seattle": (47.5864, -122.3338),  # Paseo, 1760 1st Ave S (SoDo)
 
     # ===== SEATTLE, WA - Downtown / Belltown / Pike Place =====
-    "sweetgreen so|seattle": (47.6100, -122.3400),  # Sweetgreen South Lake Union
-    "sweetgreen|seattle": (47.6100, -122.3400),
-    "sweetgreen|unknown": (47.6100, -122.3400),
-    "sweetgreen|seattle, wa (slu)": (47.6100, -122.3400),
-    "sweetgreen cap hill|seattle": (47.6155, -122.3210),  # Sweetgreen Capitol Hill
-    "sweetgreen cap hill|seattle, wa (capitol hill)": (47.6155, -122.3210),
-    "sweetgreen capitol hill|seattle, wa (capitol hill)": (47.6155, -122.3210),
-    "www.sweetgreen.com|unknown": (47.6100, -122.3400),
-    "wild cumin|unknown": (47.6140, -122.3440),
-    "ludi's restau|unknown": (47.6070, -122.3340),  # Ludi's
-    "hellenika cul|seattle": (47.6130, -122.3450),
-    "tst* the mark|seattle": (47.6097, -122.3425),  # The Marke
-    "red pepper|unknown": (47.6120, -122.3350),
-    "tst* maharaja|seattle": (47.6115, -122.3432),
-    "siren store 2|seattle": (47.6095, -122.3425),
+    "sweetgreen so|seattle": (47.6166, -122.3376),  # Sweetgreen South Lake Union, 801 Lenora St
+    "www.sweetgreen.com|seattle": (47.6166, -122.3376),
+    "sweetgreen capitol hill|seattle": (47.6195, -122.3210),  # Sweetgreen Capitol Hill
+    "wild cumin|kent": (47.4388, -122.2206),  # Wild Cumin, 18230 E Valley Hwy #126, Kent (Great Wall Mall)
+    "ludi's restau|seattle": (47.6109, -122.3407),  # Ludi's, 120 Stewart St
+    "hellenika cul|seattle": (47.6102, -122.3428),  # Hellenika, 1920a Pike Pl
+    "red pepper|seattle": (47.6625, -122.3131),  # Red Pepper, 4545 University Way NE
+    "maharaja|seattle": (47.6610, -122.2881),  # Maharaja Cuisine of India, 3701 NE 45th St
 
     # ===== SEATTLE, WA - Wallingford / Fremont / Ballard =====
     "hokkaido rame|seattle": (47.6615, -122.29750),  # Hokkaido Ramen
-    "impeckable ch|seattle": (47.6101, -122.3375),
-    "oh bear cafe|seattle": (47.6520, -122.3500),
+    "impeckable ch|seattle": (47.7323, -122.2930),  # Impeckable Chicken, 14307 Lake City Way NE
+    "oh bear cafe|seattle": (47.6636, -122.3162),
+    "ray's boathou|seattle": (47.6734, -122.4077),  # 6049 Seaview Ave NW, Shilshole
 
     # ===== SEATTLE, WA - Roosevelt / Northgate =====
-    "ezells famous|seattle": (47.6730, -122.3170),  # Ezell's Famous Chicken
-    "fainting goat|seattle": (47.6725, -122.3175),
+    "ezells famous|seattle": (47.6063, -122.3031),  # Ezell's Famous Chicken, 501 23rd Ave
+    "fainting goat|seattle": (47.6615, -122.3320),  # Fainting Goat Gelato, 2210 N 45th St (Wallingford)
 
     # ===== SEATTLE, WA - Beacon Hill / Columbia City / Rainier =====
-    "tst* el camio|seattle": (47.5700, -122.3070),  # El Camion
-    "carnitas mich|seattle": (47.5710, -122.3065),
-    "taqueria la p|seattle": (47.5450, -122.2830),
-    "seattle buddh|seattle": (47.5480, -122.2860),
+    "carnitas mich|seattle": (47.5807, -122.3133),  # Carnitas Michoacan, 2500 Beacon Ave S (Beacon Hill)
+    "taqueria la p|seattle": (47.7081, -122.3326),  # Taqueria La Pasadita, 2143 N Northgate Way
+    "seattle buddh|seattle": (47.5997, -122.3132),  # Seattle Buddhist Temple, 1427 S Main St
 
     # ===== SEATTLE, WA - University Village / Ravenna =====
-    "tst* cedars i|seattle": (47.6620, -122.2990),  # Cedars
-    "tst* cafe on|seattle": (47.6615, -122.2985),
 
     # ===== SEATTLE, WA - Other Seattle locations =====
-    "aladdin falaf|seattle": (47.6163, -122.3530),  # Aladdin Falafel Corner
-    "tst* taste of|seattle": (47.6640, -122.3130),
-    "myung dong to|seattle": (47.6160, -122.3540),  # Myung Dong Tofu
-    "basil viet ki|seattle": (47.6640, -122.3127),
-    "gyro sababa s|seattle": (47.6637, -122.3128),
-    "itadakimasu 0|seattle": (47.6618, -122.3128),
+    "aladdin falaf|seattle": (47.6624, -122.3133),  # Aladdin Falafel Corner, 4541 University Way NE
+    "myung dong to|seattle": (47.6582, -122.3141),  # Myung Dong Tofu, 4142 Brooklyn Ave NE
+    "basil viet ki|seattle": (47.6554, -122.3132),  # Basil Viet Kitchen, 4002 University Way NE
+    "gyro sababa s|seattle": (47.6634, -122.3177),  # Gyro Sababa, 4701 Roosevelt Way NE
+    "itadakimasu 0|seattle": (47.6643, -122.3144),  # Itadakimasu, 4743 Brooklyn Ave NE
     "kais thai str|seattle": (47.6610, -122.3133),
-    "hong kong bis|seattle": (47.5980, -122.3222),  # HK Bistro, Chinatown
-    "tres lecheria|seattle": (47.6161, -122.3300),
-    "jin huang (ki|seattle": (47.5983, -122.3225),  # Diamond Bay / Jin Huang
-    "uep*diamond b|seattle": (47.5983, -122.3225),
-    "tst* mcozy ca|seattle": (47.6618, -122.3128),
-    "ding tea seat|seattle": (47.6612, -122.3128),
-    "tst* kedai ma|seattle": (47.6622, -122.3131),
-    "fob poke bar|unknown": (47.6618, -122.3128),
-    "fob sushi bar|seattle": (47.6617, -122.3128),
-    "meet fresh|unknown": (47.5980, -122.3226),
-    "eat and go th|seattle": (47.6065, -122.3340),
-    "happy lemon|seattle": (47.6149, -122.3230),
-    "spicy style r|seattle": (47.5982, -122.3228),
-    "than brothers|seattle": (47.6640, -122.3133),
-    "lighthouise ro|seattle": (47.6163, -122.3535),
-    "lees kitchen|unknown": (47.6618, -122.3128),
-    "the bob|unknown": (47.6637, -122.3128),
-    "korean tofu h|seattle": (47.6155, -122.3530),
-    "mr. lu seafoo|seattle": (47.5980, -122.3225),
-    "lin handmade|unknown": (47.5978, -122.3225),
-    "la argentina|unknown": (47.6155, -122.3200),
-    "mei mei cafe|unknown": (47.6615, -122.3131),
-    "la bise bakery|unknown": (47.5985, -122.3226),
-    "gaga tea|unknown": (47.6156, -122.3200),
-    "tst* mia and|unknown": (47.6618, -122.3128),
-    "ejae pak mor|unknown": (47.6155, -122.3130),
-    "panda noodle|unknown": (47.6155, -122.3540),
-    "yumbit - harb|seattle": (47.6070, -122.3340),
-    "happy lamb ho|seattle": (47.6160, -122.3460),  # Happy Lamb Hot Pot
-    "shinya shokud|seattle": (47.6155, -122.3530),
-    "la cabana 000|seattle": (47.5450, -122.2835),
-    "kfc-tb #343 0|seattle": (47.6620, -122.3131),
-    "alibertos sea|seattle": (47.6630, -122.3131),
-    "tst* portage|unknown": (47.6075, -122.3340),
-    "uep*shanghai|unknown": (47.6155, -122.3450),  # Shanghai Garden?
-    "fusion feast pizza|unknown": (49.1815, -123.1370),  # 5300 No. 3 Rd, Richmond, BC
-    "lil woodys sea|unknown": (47.6155, -122.3210),  # Lil Woody's
-    "cheesecake se|seattle": (47.6130, -122.3370),  # Cheesecake Factory
-    "red robin|unknown": (47.6160, -122.3480),
-    "kanishka cuisine of|unknown": (47.6637, -122.3125),
-    "the curry club|seattle": (47.6163, -122.3540),
-    "dong tian|unknown": (47.5982, -122.3226),
-    "snowy village|unknown": (47.6612, -122.3131),
-    "xiao chi jie|unknown": (47.6160, -122.3460),
-    "lil woodys|unknown": (47.6155, -122.3210),
-    "kuali|unknown": (47.6100, -122.3400),
-    "gelatiamo|unknown": (47.6160, -122.3380),
-    "ummadak|unknown": (47.6617, -122.3128),
-    "lighthouse ro|seattle": (47.6163, -122.3535),
-    "fuji bakery|seattle": (47.5978, -122.3224),
-    "tst* xi'an no|seattle": (47.6155, -122.3530),  # Xi'an Noodles
-    "pho bac dt|seattle": (47.5970, -122.3230),
+    "hong kong bis|seattle": (47.5979, -122.3252),  # HK Bistro, 507 Maynard Ave S (Chinatown)
+    "tres lecheria|seattle": (47.6612, -122.3306),  # Tres Lecheria, 2315 N 45th St (Wallingford)
+    "jin huang (ki|seattle": (47.5985, -122.3215),  # Diamond Bay, 409 8th Ave S
+    "diamond b|seattle": (47.5985, -122.3215),  # Diamond Bay alias
+    "mcozy ca|seattle": (47.6633, -122.3012),
+    "meetfresh chinatown|seattle": (47.5982, -122.3258),  # Meet Fresh, 659 S King St (Chinatown-ID)
+    "uw seattle bean|seattle": (47.6558, -122.3081),  # Seattle Bean, UW campus
+    "cafe on|seattle": (47.6586, -122.3131),  # Cafe On the Ave, U-District
+    "kedai ma|seattle": (47.6648, -122.3131),  # Kedai Makan, U-District
+    "taste of|seattle": (47.6691, -122.3176),  # Taste of India, 5517 Roosevelt Way NE
+    "el camio|seattle": (47.6831, -122.3724),  # El Camion, Ballard
+    "the curry club|seattle": (47.6615, -122.3131),  # The Curry Club (Uber Eats)
+    "fusion feast pizza and cu|seattle": (47.6615, -122.3131),  # Fusion Feast
+    "ding tea seat|seattle": (47.6638, -122.3133),  # Ding Tea, 4725 University Way NE
+    "fob poke bar|seattle": (47.6140, -122.3421),  # FOB Poke Bar, 2101 4th Ave (Belltown)
+    "eat and go th|seattle": (47.7206, -122.3446),  # Eat & Go Thai, 12534 Aurora Ave N
+    "happy lemon|seattle": (47.6624, -122.2989),  # Happy Lemon U Village, 2630 NE Village Ln
+    "spicy style r|seattle": (47.7247, -122.3438),  # Spicy Style of Sichuan, 13200 Aurora Ave N
+    "than brothers|seattle": (47.6586, -122.3134),  # Than Brothers, 4207 University Way NE
+    "mr. lu seafoo|seattle": (47.6646, -122.3129),  # Mr Lu's Burgers & Seafood, 4752 University Way NE
+    "lin handmade|seattle": (47.6640, -122.3150),  # Lin Handmade, 4757 12th Ave NE (U-District)
+    "mei mei cafe|seattle": (47.6650, -122.3177),  # Mei Mei Cafe, 1004 NE 50th St
+    "la bise bakery|vancouver": (49.2727, -123.1352),  # La Bise Bakery, 1689 Johnston St, Vancouver BC
+    "gaga tea|seattle": (47.5977, -122.3252),  # Gaga Tea, 523 Maynard Ave S (Chinatown)
+    "mia and|kent": (47.4388, -122.2206),
+    "ejae pak mor|seattle": (47.5978, -122.3280),  # E-Jae Pak Mor, 504 5th Ave S (Chinatown/ID)
+    "panda noodle|seattle": (47.6618, -122.3131),  # Panda Noodle Bar, 4508 University Way NE
+    "yumbit - harb|seattle": (47.6213, -122.3363),  # Yumbit, 333 Boren Ave N
+    "shanghai|seattle": (47.5977, -122.3262),  # Shanghai Garden (post-prefix-strip name)
+    "lil woodys sea|seattle": (47.6149, -122.3282),  # Lil Woody's Capitol Hill, 1211 Pine St
+    "kanishka cuisine of|seattle": (47.5891, -122.3338),  # Kanishka, 1534 1st Ave S (SoDo)
+    "albasha|seattle": (47.6136, -122.3466),  # Al Basha Mediterranean, 2302 1st Ave (Belltown)
+    "seafood city|tukwila": (47.4598, -122.2561),  # Seafood City, 1368 Southcenter Mall, Tukwila
+    "the edge skyomish|seattle": (47.7096, -121.3589),  # The Edge, 210 E Railroad Ave, Skykomish, WA
+    "kuali|seattle": (47.6100, -122.3400),
 
     # ===== SEATTLE, WA - Various chains =====
-    "domino's|unknown": (47.6162, -122.3210),
-    "five guys|unknown": (47.6155, -122.3200),
-    "panda express|unknown": (47.6170, -122.3190),
-    "chick-fil-a|unknown": (47.6160, -122.3330),
-    "subway|unknown": (47.6150, -122.3300),
-    "mcdonald's|unknown": (47.6155, -122.3260),
-    "shake shack|unknown": (47.6148, -122.3340),
-    "chipotle mexican grill|unknown": (47.6158, -122.3310),
-    "jack in the b|seattle": (47.6640, -122.3136),
-    "taco del mar|unknown": (47.6155, -122.3290),
-    "starbucks|unknown": (47.6097, -122.3425),
+    # (These are primary-location coords; chains with multiple locations are split below)
+    "chick-fil-a|seattle": (47.7226, -122.3453),  # 12801 Aurora Ave N
+    "subway|seattle": (47.6140, -122.3420),  # 305 Lenora St
+    "taco del mar|seattle": (47.6158, -122.3344),  # 908 Stewart St
+    "mcdonald's|seattle": (47.6155, -122.3260),
+    "chipotle mexican grill|seattle": (47.6158, -122.3310),
+    "jack in the b|seattle": (47.6648, -122.3134),  # Jack in the Box, 4749 University Way NE (permanently closed)
+    # Split chains (Panda Express, Five Guys, Domino's, Dick's) handled below
+    "panda express lake city|seattle": (47.7196, -122.2953),  # 12513 Lake City Way NE
+    "panda express interbay|seattle": (47.6340, -122.3770),  # 1827 15th Ave W Suite A23
+    "five guys northgate|seattle": (47.7030, -122.3230),  # 311 NE 103rd St
+    "five guys shoreline|shoreline": (47.7423, -122.3483),  # 15515 Westminster Way N
+    "domino's u-district|seattle": (47.6640, -122.3150),  # 4715 Brooklyn Ave NE
+    "domino's west seattle|seattle": (47.5750, -122.3870),  # 3220 California Ave SW
+    "dick's drive-in u-district|seattle": (47.6611, -122.3278),  # 111 NE 45th St
+    "dick's drive-in capitol hill|seattle": (47.6193, -122.3212),  # 115 Broadway E
 
     # ===== SEATTLE, WA - food court / misc =====
     # Costco locations split across 4 stores
-    "costco sodo|unknown": (47.5632, -122.3293),      # Costco SoDo, Seattle
-    "costco shoreline|unknown": (47.7783, -122.3285),  # Costco Shoreline
-    "costco tukwila|unknown": (47.4740, -122.2590),    # Costco Tukwila
-    "costco kirkland|unknown": (47.6960, -122.1780),   # Costco Kirkland
+    "costco sodo|seattle": (47.5653, -122.3304),      # Costco SoDo, 4401 4th Ave S
+    "costco shoreline|shoreline": (47.7751, -122.3452),  # Costco Shoreline, 1175 N 205th St
+    "costco tukwila|tukwila": (47.4456, -122.2488),    # Costco Tukwila, 400 Costco Dr
+    "costco kirkland|kirkland": (47.6807, -122.1817),   # Costco Kirkland, 8629 120th Ave NE
     "costco pharr|pharr, tx": (26.2270, -98.2070),       # Costco Pharr, TX
-    "costco richmond|richmond, bc": (49.1930, -123.1370),  # Costco Richmond, BC (9151 Bridgeport Rd)
-    "auntie anne's|unknown": (47.6140, -122.3370),
-    "district-h|unknown": (47.6145, -122.3350),
-    "ikea seatle rest|unknown": (47.4430, -122.2630),  # IKEA Renton
-    "ikea seatle|unknown": (47.4430, -122.2630),
+    "costco richmond|richmond, bc": (49.1931, -123.1218),  # Costco Richmond, BC (9151 Bridgeport Rd)
+    "auntie anne's|bellevue": (47.6170, -122.2030),  # 575 Bellevue Square
+    "ikea seatle rest|renton": (47.4424, -122.2286),  # IKEA Renton, 601 SW 41st St
+    "ikea seatle|renton": (47.4424, -122.2286),
 
     # ===== BELLEVUE, WA =====
-    "tst* los chil|bellevue": (47.6160, -122.1920),  # Los Chilangos
     "tres sandwich|bellevue": (47.6205, -122.1780),  # Tres Sandwich
-    "molly tea (be|bellevue": (47.6150, -122.2000),
+    "molly tea (be|bellevue": (47.6114, -122.2019),  # Molly Tea, 103 Bellevue Way NE
     "i love sushi on lake|bellevue": (47.6145, -122.1920),  # I Love Sushi
-    "zhangliang ma|bellevue": (47.6150, -122.1900),
-    "so tasty 00-0|bellevue": (47.6110, -122.2010),
+    "zhangliang ma|bellevue": (47.6299, -122.1547),  # Zhangliang Malatang, 2221 140th Ave NE
+    "so tasty 00-0|bellevue": (47.6173, -122.1279),  # So Tasty, 15920 NE 8th St #7 (Crossroads)
     "t&t supermark|bellevue": (47.6205, -122.1780),  # T&T Bellevue
-    "tst* mercurys|bellevue": (47.6130, -122.2050),
-    "meetfresh bellevue|bellevue": (47.6310, -122.1410),  # Crossroads area
-    "letao|bellevue": (47.6155, -122.2000),
+    "t&t supermarket bellevue|bellevue": (47.6205, -122.1780),
 
     # ===== LYNNWOOD, WA =====
-    "rinconcito pe|lynnwood": (47.8210, -122.3150),
-    "t&t supermark|lynnwood": (47.8220, -122.3150),  # T&T Lynnwood
-    "carniceria mi|lynnwood": (47.8205, -122.3155),
+    "rinconcito pe|lynnwood": (47.8272, -122.3112),  # 18904 Hwy 99
+    "t&t supermarket lynnwood|lynnwood": (47.8202, -122.3186),
 
     # ===== SHORELINE, WA =====
     "teriyaki isla|shoreline": (47.7560, -122.3450),
 
     # ===== EDMONDS, WA =====
-    "sp aquariumco|edmonds": (47.8115, -122.3840),
 
     # ===== TUKWILA, WA =====
     "us 3036 tukwi|tukwila": (47.4740, -122.2590),  # H-Mart/Great Wall Mall area
-    "jb-us tukwila|tukwila": (47.4740, -122.2590),
 
     # ===== FORKS, WA =====
     "yabes food tr|forks": (47.9505, -124.3850),
-    "la mexican ga|forks": (47.9500, -124.3853),
-    "forks outfitt|forks": (47.9510, -124.3855),
 
     # ===== VANCOUVER, BC =====
     "toyokan 41305|vancouver": (49.2827, -123.1207),
@@ -234,25 +199,19 @@ KNOWN_COORDS = {
     "van aqua-cour|vancouver": (49.3005, -123.1310),  # Vancouver Aquarium
     "van aqua-upst|vancouver": (49.3005, -123.1310),
     "taqueria jali|vancouver": (49.2590, -123.1020),
-    "tutto belle i|vancouver": (49.2815, -123.1208),
-    "kaisereck van|vancouver": (49.2825, -123.1212),
-    "sunlight farm|vancouver": (49.2830, -123.1215),
-    "popina foods|vancouver": (49.2720, -123.1340),  # Granville Island
-    "continental sausage co|unknown": (49.2720, -123.1345),
-    "van aqua-courtyard cafe|unknown": (49.3005, -123.1310),
-    "tim hortons|unknown": (49.2827, -123.1207),
-    "university of british|unknown": (49.2606, -123.2460),  # UBC
-    "ginger indian cuisine|unknown": (49.1740, -122.8530),  # Richmond/Surrey area maybe
-    "pizza pzazz vancouver bc|unknown": (49.2130, -123.0120),
-    "pizza pzazz|unknown": (49.2130, -123.0120),
+    "continental sausage co|vancouver": (49.2720, -123.1345),
+    "van aqua-courtyard cafe|vancouver": (49.3005, -123.1310),
+    "yvrwc pms|vancouver": (49.1947, -123.1817),  # The Westin Wall Centre, Vancouver Airport
+    "tim hortons|vancouver": (49.2827, -123.1207),
+    "university of british|vancouver": (49.2606, -123.2460),  # UBC
+    "ginger indian cuisine|surrey": (49.1740, -122.8530),  # Richmond/Surrey area maybe
+    "pizza pzazz vancouver bc|vancouver": (49.2130, -123.0120),
+    "pizza pzazz|vancouver": (49.2130, -123.0120),
 
     # ===== RICHMOND, BC =====
     "oomomo aberde|richmond": (49.1815, -123.1370),  # Aberdeen Centre
     "castella rich|richmond": (49.1815, -123.1370),
-    "mui garden|richmond": (49.1700, -123.1360),
-    "macu tea rich|richmond": (49.1815, -123.1370),
-    "big way hot p|richmond": (49.1710, -123.1360),
-    "t&t supermarket #026 richmond bc|unknown": (49.1815, -123.1370),
+    "t&t supermarket #026 richmond bc|richmond": (49.1815, -123.1370),
 
     # ===== LAS VEGAS, NV =====
     "in-n-out lv|las vegas": (36.1215, -115.1690),
@@ -260,100 +219,55 @@ KNOWN_COORDS = {
     "sushi neko|las vegas": (36.1145, -115.1730),
     "tacos el gord|las vegas": (36.1695, -115.1500),
     "style pasifik|las vegas": (36.1230, -115.1700),
-    "tst* ramen bo|las vegas": (36.1200, -115.1720),
 
     # ===== SAN FRANCISCO BAY AREA =====
     "blue bottle c|san francisco": (37.7820, -122.4080),
-    "tst* el porte|san francisco": (37.7960, -122.4070),  # El Porteño
     "sf chickenbox|san francisco": (37.7850, -122.4100),
     "affis marin g|san francisco": (37.7870, -122.4090),
-    "www.sweetgree|los angeles": (47.6100, -122.3400),  # Actually Seattle Sweetgreen orders
+    "www.sweetgree|los angeles": (47.6166, -122.3376),  # Actually Seattle Sweetgreen orders
     "dishdash 190 s. murp|sunnyvale": (37.3770, -122.0360),
     "nature's orga|sunnyvale": (37.3775, -122.0365),
-    "99 ranch mark|cupertino": (37.3230, -122.0135),
     # "delightful|oakland" — removed, was SF/South Bay not Oakland
     "sabroso doggy|santa rosa": (37.7660, -122.5190),  # actually Sausalito area
     "sausalito swe|sausalito": (37.8590, -122.4850),
-    "hotdogs|unknown": (37.7850, -122.4090),  # SF trip, March 2025
-    "kuali|unknown": (37.7855, -122.4085),
+    "hotdogs|san francisco": (37.7850, -122.4090),  # SF trip, March 2025
+    "kuali|san francisco": (37.7855, -122.4085),
 
     # ===== EDINBURG / MCALLEN / RGV, TX =====
-    "tst* taco pal|edinburg": (26.3017, -98.1633),  # Taco Palenque
     "texas roadhou|edinburg": (26.2500, -98.2060),
-    "la taquiza re|edinburg": (26.3020, -98.1636),
-    "siempre natur|edinburg": (26.3020, -98.1640),
-    "tst* taqueria|edinburg": (26.3010, -98.1630),
-    "par*qargo cof|edinburg": (26.3015, -98.1635),
     "sip matcha ba|edinburg": (26.3018, -98.1638),
-    "dave's hot ch|edinburg": (26.3016, -98.1632),
-    "tst* palenque|edinburg": (26.3017, -98.1633),
-    "taco palenque|edinburg": (26.3017, -98.1633),
     "rodriguez mex|mcallen": (26.2035, -98.2300),
-    "tst* sweet pa|mcallen": (26.2030, -98.2305),
-    "sprouts farme|mcallen": (26.2170, -98.2450),
     "ikea|mcallen": (26.2100, -98.2400),  # IKEA McAllen? Actually no IKEA there, this might be something else
-    "pho houston 2|mcallen": (26.2050, -98.2310),
-    "tst* rudy's c|pharr": (26.1970, -98.1850),  # Rudy's Country Store
     "la reyna bake|pharr": (26.1960, -98.1840),
     "tacos kissi|san juan": (26.1900, -98.1500),
-    "taqueria la h|san juan": (26.1895, -98.1505),
-    "tst* palenque|san juan": (26.1898, -98.1502),
-    "tst* palenque|san antonio": (29.4241, -98.4936),
-    "sat 3894 what|san antonio": (29.4600, -98.4500),  # Whataburger
-    "sat 3893 smok|san antonio": (29.4600, -98.4510),
-    "shipley do-nuts|brownsville": (25.9975, -97.4970),
-    "buc-ee's 20-u|pearland": (29.5610, -95.3110),
-    "buc-ee's|unknown": (29.5610, -95.3110),
-    "buc-ee's #30|wharton": (29.3120, -96.1030),
     "in-n-out burg|windcrest": (29.5160, -98.3800),
-    "whataburger|unknown": (26.3016, -98.1632),
-    "raising cane's chicken fingers|unknown": (26.2500, -98.2060),
-    "dairy queen|unknown": (26.3010, -98.1632),
-    "tst* reserva|unknown": (26.3020, -98.1640),
-    "tst* rossina|unknown": (26.3015, -98.1638),
-    "tst* siempre|unknown": (26.3020, -98.1640),
-    "the caffeine|unknown": (26.3018, -98.1636),
-    "sonic|unknown": (26.3010, -98.1630),
-    "la cocina oaxaqueña|unknown": (26.3020, -98.1635),
+    "raising cane's chicken fingers|edinburg": (26.2500, -98.2060),
+    "the caffeine|edinburg": (26.3018, -98.1636),
+    "sonic|edinburg": (26.3010, -98.1630),
+    "siempre natural|edinburg": (26.3030, -98.1745),  # Siempre Natural, Edinburg, TX
 
     # ===== SAN ANTONIO, TX (Airport) =====
     "paradies laga|atlanta": (29.5337, -98.4698),  # San Antonio Airport (SAT)
 
     # ===== LAKEWOOD, CO (actually Seattle) =====
-    "einsteinbros_|lakewood": (47.6613, -122.3005),  # 2746 NE 45th St, Seattle, WA 98105
 
     # ===== MORRISVILLE, NC =====
-    "shawarma stop|morrisville": (35.8235, -78.8256),
 
     # ===== TOKYO, JAPAN =====
-    "cafe mugiwara|tokyo": (35.6600, 139.7040),  # One Piece themed cafe
-    "cocoichibanya|tokyo": (35.6610, 139.7000),
-    "youmenyagoemo|tokyo": (35.6615, 139.7010),
-    "kuuya shibuya|tokyo": (35.6620, 139.7020),
-    "lukes omotesa|tokyo": (35.6650, 139.7100),  # Luke's Lobster Omotesando
-    "yoshinoya|tokyo": (35.6595, 139.7005),
-    "ol by oslo br|tokyo": (35.6600, 139.7030),
 
     # ===== BANGKOK, THAILAND =====
     "grab|bangkok": (13.7563, 100.5018),  # Various Grab food orders
     "hyatt regency|bangkok": (13.7440, 100.5400),  # Hyatt Regency Bangkok
     "the local by oamthon|bangkok": (13.7260, 100.4880),
-    "gourmet termi|bangkok": (13.6900, 100.7501),  # Suvarnabhumi area
-    "moone|unknown": (13.7460, 100.5350),  # Bangkok trip, Sep 2025
-    "linepay *pf_line man wong|unknown": (13.7500, 100.5200),
+    "moone|bangkok": (13.7460, 100.5350),  # Bangkok trip, Sep 2025
+    "linepay *pf_line man wong|bangkok": (13.7500, 100.5200),
 
     # ===== INCHEON, SOUTH KOREA =====
     "robot kimbab|incheon": (37.4602, 126.4407),
 
     # ===== HONOLULU, HI =====
-    "cnp mauka market|honolulu": (21.3320, -157.9200),
-    "mauka market|honolulu": (21.3320, -157.9200),
 
     # ===== WORK TRIPS =====
-    "shawarma stop|seattle": (35.8235, -78.8256),  # Actually Morrisville
-    "ncma cafe - west|unknown": (35.8100, -78.6400),  # NC Museum of Art, Raleigh
-    "pike&pine st|unknown": (35.8240, -78.8260),  # Morrisville/RTP area
-    "la farm bakery & caf|unknown": (35.7900, -78.7810),  # La Farm Bakery, Cary NC
 }
 
 # City center fallback coordinates
@@ -381,6 +295,9 @@ FALSE_POSITIVES = {
     'zelle payment to juan', 'aplpay', 'palenque group',
     'costco wholesale',  # mixed grocery/food court - skip
     'delightful',  # unknown SF/South Bay restaurant, merchant registered as Oakland
+    'uber eats',  # delivery service fees, not a restaurant
+    "love's",  # gas station
+    'exxonmobil',  # gas station
 }
 
 ###############################################################################
@@ -473,13 +390,105 @@ for r in restaurants:
     # UW food services grouping
     if 'uw food servi' in r['name'].lower() or 'uw hfs' in r['name'].lower():
         city = 'Seattle, WA (UW Campus)'
-        clean_name = 'UW Food Services'
+        clean_name = 'Center Table'
     elif 'uw seattle be' in r['name'].lower():
         city = 'Seattle, WA (UW Campus)'
         clean_name = 'UW Seattle Bean'
 
+    # Fix city for merchants whose bank data lacks a city suffix
+    if city == 'Unknown':
+        city_overrides = {
+            # Seattle, WA
+            'shawarma king': 'Seattle, WA',
+            'panda yogurt': 'Seattle, WA',
+            'cha yan': 'Seattle, WA',
+            'u-district': 'Seattle, WA',
+            'naan stop': 'Seattle, WA',
+            'poke dondon': 'Seattle, WA',
+            'isarn thai kitchen': 'Seattle, WA',
+            'little thai': 'Seattle, WA',
+            'george coffee & pastries': 'Seattle, WA',
+            'muddy waters': 'Seattle, WA',
+            'muddy waters coffee comp': 'Seattle, WA',
+            'portage': 'Seattle, WA',
+            'einstein bros. bagels': 'Seattle, WA',
+            'fort st': 'Seattle, WA',
+            'mee sum': 'Seattle, WA',
+            'grean': 'Seattle, WA',
+            'heytea': 'Seattle, WA',
+            'heytea south': 'Seattle, WA',
+            "dick's drive": 'Seattle, WA',
+            'paseo sodo': 'Seattle, WA',
+            'www.sweetgreen.com': 'Seattle, WA',
+            "ludi's restau": 'Seattle, WA',
+            'red pepper': 'Seattle, WA',
+            'oh bear cafe': 'Seattle, WA',
+            "ray's boathou": 'Seattle, WA',
+            'fob poke bar': 'Seattle, WA',
+            'lin handmade': 'Seattle, WA',
+            'mei mei cafe': 'Seattle, WA',
+            'gaga tea': 'Seattle, WA',
+            'ejae pak mor': 'Seattle, WA',
+            'panda noodle': 'Seattle, WA',
+            'shanghai': 'Seattle, WA',
+            'lil woodys sea': 'Seattle, WA',
+            'kanishka cuisine of': 'Seattle, WA',
+            'albasha': 'Seattle, WA',
+            'the edge skyomish': 'Seattle, WA',
+            'kuali': 'Seattle, WA',
+            'chick-fil-a': 'Seattle, WA',
+            'subway': 'Seattle, WA',
+            'taco del mar': 'Seattle, WA',
+            "mcdonald's": 'Seattle, WA',
+            'chipotle mexican grill': 'Seattle, WA',
+            'cafe on': 'Seattle, WA',
+            'snowy village - uw': 'Seattle, WA',
+            # Bellevue / Renton / Kent / Tukwila, WA
+            'letao': 'Bellevue, WA',
+            "auntie anne's": 'Bellevue, WA',
+            'ikea seatle rest': 'Renton, WA',
+            'ikea seatle': 'Renton, WA',
+            'wild cumin': 'Kent, WA',
+            'mia and': 'Kent, WA',
+            'seafood city': 'Tukwila, WA',
+            # Shoreline, WA
+            'plaza latina': 'Shoreline, WA',
+            # Vancouver, BC
+            'continental sausage co': 'Vancouver, BC',
+            'van aqua-courtyard cafe': 'Vancouver, BC',
+            'yvrwc pms': 'Vancouver, BC',
+            'tim hortons': 'Vancouver, BC',
+            'university of british': 'Vancouver, BC',
+            'pizza pzazz': 'Vancouver, BC',
+            'pizza pzazz vancouver bc': 'Vancouver, BC',
+            'la bise bakery': 'Vancouver, BC',
+            # Surrey, BC
+            'ginger indian cuisine': 'Surrey, BC',
+            # Richmond, BC
+            't&t supermarket #026 richmond bc': 'Richmond, BC',
+            # San Francisco, CA
+            'hotdogs': 'San Francisco, CA',
+            # Edinburg, TX
+            "raising cane's chicken fingers": 'Edinburg, TX',
+            'the caffeine': 'Edinburg, TX',
+            'sonic': 'Edinburg, TX',
+            'siempre': 'Edinburg, TX',
+            'siempre natural': 'Edinburg, TX',
+            # Bangkok, Thailand
+            'moone': 'Bangkok, Thailand',
+            'linepay *pf_line man wong': 'Bangkok, Thailand',
+            # Unknown location
+            'fusion feast pizza and cu': 'Seattle, WA',
+        }
+        if lower in city_overrides:
+            city = city_overrides[lower]
+
     # Skip individual Costco entries — they'll be added manually below as split locations
     if lower == 'costco':
+        continue
+
+    # Skip chains that will be split into multiple locations below
+    if lower in ('panda express', 'five guys', "dick's drive-in", "dick's drive", "domino's"):
         continue
 
     key = (clean_name.lower().strip(), city)
@@ -493,38 +502,40 @@ NAME_OVERRIDES = {
     'www.sweetgree': 'Sweetgreen',
     'www.sweetgreen.com': 'Sweetgreen',
     'sweetgreen so': 'Sweetgreen',
-    'aplus hong ko': 'A+ Hong Kong Kitchen',
+    'aplus hong ko': 'A+ Hong Kong Restaurant',
     'hey! i am yog': 'Hey! I am Yogost',
     'dick\'s drive': 'Dick\'s Drive-In',
-    'tst* dont yel': 'Don\'t Yell at Me',
-    'tst* fort st': 'Fort St. George',
+    'dont yel': "Don't Yell at Me",
+    'fort st': 'Fort St. George',
     'tst* mee sum': 'Mee Sum Pastry',
-    'tst* los chil': 'Los Chilangos',
-    'tst* cedars i': 'Cedars of Lebanon',
-    'tst* el camio': 'El Camion',
-    'tst* taste of': 'Taste of India',
-    'tst* maharaja': 'Maharaja',
-    'tst* the mark': 'The Marke',
-    'tst* cafe on': 'Cafe On',
-    'tst* next lev': 'Next Level Burger',
-    'tst* snowy vi': 'Snowy Village',
-    'tst* kedai ma': 'Kedai Makan',
-    'tst* mcozy ca': 'MCozy Cafe',
-    'tst* ramen bo': 'Ramen Boy',
-    'tst* xi\'an no': 'Xi\'an Noodles',
-    'tst* portage': 'Portage Bay Cafe',
-    'tst* el porte': 'El Porteño',
-    'tst* sweet pa': 'Sweet Paris',
-    'tst* taco pal': 'Taco Palenque',
-    'tst* palenque': 'Taco Palenque',
-    'tst* siempre': 'Siempre Natural',
-    'tst* taqueria': 'Taqueria',
-    'tst* rudy\'s c': 'Rudy\'s Country Store',
-    'tst* reserva': 'Reserva',
-    'tst* rossina': 'Rossina',
-    'tst* mercurys': 'Mercury\'s',
-    'uep*diamond b': 'Diamond Bay',
-    'uep*shanghai': 'Shanghai Garden',
+    'mee sum': 'Mee Sum Pastry',
+    "ray's boathou": "Ray's Boathouse",
+    'los chil': 'Los Chilangos',
+    'cedars i': 'Cedars of Lebanon',
+    'el camio': 'El Camion',
+    'taste of': 'Taste of India',
+    'maharaja': 'Maharaja',
+    'the mark': 'The Marke',
+    'cafe on': 'Cafe On',
+    'next lev': 'Next Level Burger',
+    'snowy vi': 'Snowy Village',
+    'kedai ma': 'Kedai Makan',
+    'mcozy ca': 'MCozy Cafe',
+    'ramen bo': 'Ramen Boy',
+    "xi'an no": "Xi'an Noodles",
+    'portage': 'Portage Bay Cafe',
+    'el porte': 'El Porteño',
+    'sweet pa': 'Sweet Paris',
+    'taco pal': 'Taco Palenque',
+    'palenque': 'Taco Palenque',
+    'siempre': 'Siempre Natural',
+    'taqueria': 'Taqueria',
+    "rudy's c": "Rudy's Country Store",
+    'reserva': 'Reserva',
+    'rossina': 'Rossina',
+    'mercurys': "Mercury's",
+    'diamond b': 'Diamond Bay',
+    'shanghai': 'Shanghai Garden',
     'einsteinbros_': 'Einstein Bros. Bagels',
     'hokkaido rame': 'Hokkaido Ramen Santouka',
 }
@@ -586,18 +597,106 @@ sg_slu_total = round(sg_total_spent - sg_cap_hill_total, 2)
 unique[('sweetgreen', 'Seattle, WA (SLU)')] = {'name': 'Sweetgreen', 'city': 'Seattle, WA (SLU)', 'count': sg_slu_count, 'total': sg_slu_total}
 unique[('sweetgreen cap hill', 'Seattle, WA (Capitol Hill)')] = {'name': 'Sweetgreen Capitol Hill', 'city': 'Seattle, WA (Capitol Hill)', 'count': sg_cap_hill_count, 'total': sg_cap_hill_total}
 
+# Split Panda Express by date: after 06/2025 → Lake City, before → Interbay
+pe_lake_city = {'name': 'Panda Express (Lake City)', 'city': 'Seattle, WA (Lake City)', 'count': 0, 'total': 0}
+pe_interbay = {'name': 'Panda Express (Interbay)', 'city': 'Seattle, WA (Interbay)', 'count': 0, 'total': 0}
+for r in restaurants:
+    clean, city = parse_merchant(r['name'])
+    if clean.lower() == 'panda express':
+        txn_date = datetime.strptime(r['date'], '%Y-%m-%d')
+        if txn_date >= datetime(2025, 7, 1):
+            pe_lake_city['count'] += 1
+            pe_lake_city['total'] += r['amount']
+        else:
+            pe_interbay['count'] += 1
+            pe_interbay['total'] += r['amount']
+if pe_lake_city['count'] > 0:
+    unique[('panda express lake city', 'Seattle, WA (Lake City)')] = pe_lake_city
+if pe_interbay['count'] > 0:
+    unique[('panda express interbay', 'Seattle, WA (Interbay)')] = pe_interbay
+
+# Split Five Guys: 1 at Shoreline, rest at Northgate (311 NE 103rd St)
+fg_total_count = 0
+fg_total_spent = 0
+for r in restaurants:
+    clean, city = parse_merchant(r['name'])
+    if clean.lower() == 'five guys':
+        fg_total_count += 1
+        fg_total_spent += r['amount']
+fg_shoreline_count = 1
+fg_shoreline_total = round(fg_total_spent / max(fg_total_count, 1), 2)
+fg_northgate_count = fg_total_count - fg_shoreline_count
+fg_northgate_total = round(fg_total_spent - fg_shoreline_total, 2)
+unique[('five guys northgate', 'Seattle, WA (Northgate)')] = {'name': 'Five Guys (Northgate)', 'city': 'Seattle, WA (Northgate)', 'count': fg_northgate_count, 'total': fg_northgate_total}
+unique[('five guys shoreline', 'Shoreline, WA')] = {'name': 'Five Guys (Shoreline)', 'city': 'Shoreline, WA', 'count': fg_shoreline_count, 'total': fg_shoreline_total}
+
+# Split Dick's Drive-In: last 3 at U-District (111 NE 45th), rest at Capitol Hill (115 Broadway E)
+dk_total_count = 0
+dk_total_spent = 0
+for r in restaurants:
+    clean, city = parse_merchant(r['name'])
+    if clean.lower().startswith("dick's drive"):
+        dk_total_count += 1
+        dk_total_spent += r['amount']
+dk_udist_count = 3
+dk_udist_total = round(dk_total_spent * (3 / max(dk_total_count, 1)), 2)
+dk_caphill_count = dk_total_count - dk_udist_count
+dk_caphill_total = round(dk_total_spent - dk_udist_total, 2)
+unique[("dick's drive-in u-district", 'Seattle, WA (U-District)')] = {'name': "Dick's Drive-In (U-District)", 'city': 'Seattle, WA (U-District)', 'count': dk_udist_count, 'total': dk_udist_total}
+unique[("dick's drive-in capitol hill", 'Seattle, WA (Capitol Hill)')] = {'name': "Dick's Drive-In (Capitol Hill)", 'city': 'Seattle, WA (Capitol Hill)', 'count': dk_caphill_count, 'total': dk_caphill_total}
+
+# Split Domino's: first 2 at U-District (4715 Brooklyn Ave NE), last 1 at West Seattle (3220 California Ave SW)
+dm_total_count = 0
+dm_total_spent = 0
+for r in restaurants:
+    clean, city = parse_merchant(r['name'])
+    if clean.lower() == "domino's":
+        dm_total_count += 1
+        dm_total_spent += r['amount']
+dm_west_seattle_count = 1
+dm_west_seattle_total = round(dm_total_spent / max(dm_total_count, 1), 2)
+dm_udist_count = dm_total_count - dm_west_seattle_count
+dm_udist_total = round(dm_total_spent - dm_west_seattle_total, 2)
+unique[("domino's u-district", 'Seattle, WA (U-District)')] = {'name': "Domino's (U-District)", 'city': 'Seattle, WA (U-District)', 'count': dm_udist_count, 'total': dm_udist_total}
+unique[("domino's west seattle", 'Seattle, WA (West Seattle)')] = {'name': "Domino's (West Seattle)", 'city': 'Seattle, WA (West Seattle)', 'count': dm_west_seattle_count, 'total': dm_west_seattle_total}
+
+# Split T&T Supermarket: last 1 in Lynnwood, rest in Bellevue
+tnt_keys = [k for k in unique if 't&t supermarket' in k[0] and k[1] == 'Unknown']
+if tnt_keys:
+    tnt_key = tnt_keys[0]
+    tnt_info = unique[tnt_key]
+    tnt_total_count = tnt_info['count']
+    tnt_total_spent = tnt_info['total']
+    del unique[tnt_key]
+    tnt_lyn_count = 1
+    tnt_lyn_total = round(tnt_total_spent / max(tnt_total_count, 1), 2)
+    tnt_bel_count = tnt_total_count - tnt_lyn_count
+    tnt_bel_total = round(tnt_total_spent - tnt_lyn_total, 2)
+    unique[('t&t supermarket bellevue', 'Bellevue, WA')] = {'name': 'T&T Supermarket (Bellevue)', 'city': 'Bellevue, WA', 'count': tnt_bel_count, 'total': tnt_bel_total}
+    unique[('t&t supermarket lynnwood', 'Lynnwood, WA')] = {'name': 'T&T Supermarket (Lynnwood)', 'city': 'Lynnwood, WA', 'count': tnt_lyn_count, 'total': tnt_lyn_total}
+
 ###############################################################################
 # Step 3: Geocode - match to known coordinates
 ###############################################################################
 def get_coords(name, city):
     name_lower = name.lower().strip()
     city_lower = city.lower()
+    city_prefix = city_lower.split(',')[0]
 
     # Try exact match with city suffix
-    for city_hint in [city_lower.split(',')[0], 'unknown']:
-        key = f"{name_lower}|{city_hint}"
-        if key in KNOWN_COORDS:
-            return KNOWN_COORDS[key]
+    key = f"{name_lower}|{city_prefix}"
+    if key in KNOWN_COORDS:
+        return KNOWN_COORDS[key]
+
+    # Try with parenthesized suffixes removed and joined
+    # e.g. "Panda Express (Lake City)" → "panda express lake city"
+    paren_match = re.search(r'\(([^)]*)\)', name_lower)
+    if paren_match:
+        stripped = re.sub(r'\s*\([^)]*\)', '', name_lower).strip()
+        joined = f"{stripped} {paren_match.group(1)}"
+        key2 = f"{joined}|{city_prefix}"
+        if key2 in KNOWN_COORDS:
+            return KNOWN_COORDS[key2]
 
     # Try partial match
     for known_key, coords in KNOWN_COORDS.items():
